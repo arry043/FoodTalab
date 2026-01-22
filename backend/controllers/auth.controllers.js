@@ -5,11 +5,11 @@ import generateToken from "../utils/token.js";
 export const signUp = async (req, res) => {
     try {
         const { fullName, email, password, mobile, role } = req.body;
-        const user = await User.findOne({ email });
+        let user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({ message: "User already exists" });
         }
-        if (password.length < 6) {
+        if (!password || password.length < 6) {
             return res
                 .status(400)
                 .json({ message: "Password must be at least 6 characters" });
@@ -30,7 +30,7 @@ export const signUp = async (req, res) => {
         });
 
         const token = await generateToken(user._id);
-        res.cookies("token", token, {
+        res.cookie("token", token, {
             httpOnly: true,
             secure: false,
             sameSite: "strict",
@@ -48,37 +48,38 @@ export const signUp = async (req, res) => {
 export const signIn = async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res
+                .status(400)
+                .json({ message: "Email and password are required" });
+        }
+
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: "User does not exists" });
+            return res.status(400).json({ message: "User does not exist" });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({ message: "Invalid Password" });
+            return res.status(400).json({ message: "Invalid password" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        user = await User.create({
-            fullName,
-            email,
-            password: hashedPassword,
-            mobile,
-            role,
-        });
-
         const token = await generateToken(user._id);
-        res.cookies("token", token, {
+
+        res.cookie("token", token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "strict",
+            secure: false, // true only in HTTPS
+            sameSite: "lax", // dev-friendly for CORS
             maxAge: 24 * 60 * 60 * 1000,
         });
 
-        return res
-            .status(200)
-            .json({ data: user, message: "SignIn successfully" });
+        return res.status(200).json({
+            data: user,
+            message: "SignIn successfully",
+        });
     } catch (error) {
+        console.error("SIGNIN ERROR:", error);
         return res.status(500).json({ message: "Server Error: signIn", error });
     }
 };
