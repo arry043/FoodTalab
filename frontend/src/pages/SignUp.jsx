@@ -49,12 +49,12 @@ const SignUp = () => {
                 style={{ borderColor: borderColor }}
             >
                 <h1
-                    className="text-3xl font-bold mb-2 text-[${primaryColor}]]"
+                    className="text-3xl text-center font-bold mb-2 text-[${primaryColor}]]"
                     style={{ color: primaryColor }}
                 >
                     FoodTalab
                 </h1>
-                <p className="text-gray-600 mb-8">
+                <p className="text-gray-600 mb-8 text-center">
                     Create your account to continue to remove talab from your
                     plate
                 </p>
