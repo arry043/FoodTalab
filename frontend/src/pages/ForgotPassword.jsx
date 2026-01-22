@@ -3,7 +3,7 @@ import { useState } from "react";
 import { GiSunkenEye } from "react-icons/gi";
 import { GiEyelashes } from "react-icons/gi";
 import { FcGoogle } from "react-icons/fc";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { serverUrl } from "../App";
 const ForgotPassword = () => {
@@ -13,12 +13,72 @@ const ForgotPassword = () => {
     const bgColor = "#fff9f6";
     const borderColor = "#ddd";
 
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [step, setStep] = useState(1 );
     const [otp, setOtp] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
+
+    const handleSendOtp = async (e) => {
+        try {
+            const result = await axios.post(
+                `${serverUrl}/api/auth/send-otp`,
+                {
+                    email,
+                },
+                { withCredentials: true }
+            );
+            console.log(result);
+            setStep(2);
+            alert(
+                "Otp sent successfully, please check your email and enter the otp"
+            )
+        } catch (error) {
+            console.log("Step-1 Error: ", error);
+        }
+    }
+
+    const handleVarifyOtp = async (e) => {
+        try {
+            const result = await axios.post(
+                `${serverUrl}/api/auth/varify-otp`,
+                {
+                    email,
+                    otp,
+                },
+                { withCredentials: true }
+            );
+            console.log(result);
+            setStep(3);
+        } catch (error) {
+            console.log("Step-2 Error: ", error);
+        }
+    }
+
+    const handleResetPassword = async (e) => {
+        if (newPassword !== confirmPassword) {
+            alert("Passwords do not match");
+            return;
+        } 
+        try {
+            const result = await axios.post(
+                `${serverUrl}/api/auth/reset-password`,
+                {
+                    email,
+                    newPassword,
+                },
+                { withCredentials: true }
+            );
+            console.log(result);
+            alert("Password reset successful");
+            navigate("/signin");
+        } catch (error) {
+            console.log("Step-3 Error: ", error);
+        }
+    }
 
     return (
         <div
@@ -70,6 +130,7 @@ const ForgotPassword = () => {
                                 color: "#fff",
                                 hoverColor: "#e24310",
                             }}
+                            onClick={handleSendOtp}
                         >
                             Send OTP
                         </button>
@@ -118,6 +179,7 @@ const ForgotPassword = () => {
                                 color: "#fff",
                                 hoverColor: "#e24310",
                             }}
+                            onClick={handleVarifyOtp}
                         >
                             Submit OTP
                         </button>
@@ -184,6 +246,7 @@ const ForgotPassword = () => {
                                 color: "#fff",
                                 hoverColor: "#e24310",
                             }}
+                            onClick={handleResetPassword}
                         >
                             Reset Password
                         </button>
