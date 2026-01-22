@@ -99,7 +99,6 @@ export const signOut = async (req, res) => {
     }
 };
 
-
 export const sendOTP = async (req, res) => {
     try {
         const { email } = req.body;
@@ -115,13 +114,15 @@ export const sendOTP = async (req, res) => {
         await sendOtp(email, otp);
         return res.status(200).json({ message: "OTP sent successfully" });
     } catch (error) {
-        return res.status(500).json({ message: "Server Error: sendOTP", error });
+        return res
+            .status(500)
+            .json({ message: "Server Error: sendOTP", error });
     }
-}
+};
 
 export const varifyOTP = async (req, res) => {
     try {
-        const {email, otp} = req.body;
+        const { email, otp } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: "User does not exist" });
@@ -138,9 +139,11 @@ export const varifyOTP = async (req, res) => {
         await user.save();
         return res.status(200).json({ message: "OTP verified successfully" });
     } catch (error) {
-        return res.status(500).json({ message: "Server Error: varifyOTP", error });
+        return res
+            .status(500)
+            .json({ message: "Server Error: varifyOTP", error });
     }
-}
+};
 
 export const resetPassword = async (req, res) => {
     try {
@@ -152,8 +155,47 @@ export const resetPassword = async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
         await user.save();
-        return res.status(200).json({ message: "Your password has been reset successfully" });
+        return res
+            .status(200)
+            .json({ message: "Your password has been reset successfully" });
     } catch (error) {
-        return res.status(500).json({ message: "Server Error: resetPassword", error });
+        return res
+            .status(500)
+            .json({ message: "Server Error: resetPassword", error });
     }
-}
+};
+
+export const googleAuth = async (req, res) => {
+    try {
+        const { fullName, email, role } = req.body;
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            user = await User.create({
+                fullName,
+                email,
+                role: role || "user",
+            });
+        }
+
+        const token = await generateToken(user._id);
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000,
+        });
+
+        return res.status(200).json({
+            data: user,
+            message: "Google login successful",
+        });
+    } catch (error) {
+        console.error("GOOGLE AUTH ERROR:", error);
+        return res
+            .status(500)
+            .json({ message: "Server Error: googleAuth", error });
+    }
+};

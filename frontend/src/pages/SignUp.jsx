@@ -5,6 +5,8 @@ import { FcGoogle } from "react-icons/fc";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { serverUrl } from "../App";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../../firebase";
 
 const SignUp = () => {
     const primaryColor = "#f25a13";
@@ -36,6 +38,27 @@ const SignUp = () => {
             console.log(result);
         } catch (error) {
             console.log(error);
+        }
+    };
+
+    const handleGoogleAuth = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+
+            const {data} = await axios.post(
+                `${serverUrl}/api/auth/google-auth`,
+                {
+                    fullName: result.user.displayName,
+                    email: result.user.email,
+                    role: "user",
+                },
+                { withCredentials: true },
+            );
+            console.log(result);
+            console.log(data);
+        } catch (error) {
+            console.log("Google Auth Error:", error.response?.data || error);
         }
     };
 
@@ -124,7 +147,7 @@ const SignUp = () => {
                             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
                             placeholder="Enter password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)} 
+                            onChange={(e) => setPassword(e.target.value)}
                         />
 
                         <button
@@ -179,6 +202,7 @@ const SignUp = () => {
 
                 <button
                     className={`w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition duration-200 border-gray-400 cursor-pointer hover:bg-[#f25a13] hover:text-white hover:border-[#f25a13]`}
+                    onClick={handleGoogleAuth}
                 >
                     <span className="text-gray-600 font-medium">
                         Signup with Google
