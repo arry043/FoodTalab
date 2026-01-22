@@ -10,6 +10,19 @@ export const signUp = async (req, res) => {
         if (user) {
             return res.status(400).json({ message: "User already exists" });
         }
+
+        if(!fullName){
+            return res.status(400).json({ message: "Full name is required" });
+        }
+        if(!email){
+            return res.status(400).json({ message: "Email is required" });
+        }
+        if(!password){
+            return res.status(400).json({ message: "Password is required" });
+        }
+        if(!mobile){
+            return res.status(400).json({ message: "Mobile number is required" });
+        }
         if (!password || password.length < 6) {
             return res
                 .status(400)
@@ -50,10 +63,16 @@ export const signIn = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if (!email || !password) {
+        if (!email) {
             return res
                 .status(400)
-                .json({ message: "Email and password are required" });
+                .json({ message: "Email is required" });
+        }
+
+        if (!password) {
+            return res
+                .status(400)
+                .json({ message: "Password is required" });
         }
 
         const user = await User.findOne({ email });

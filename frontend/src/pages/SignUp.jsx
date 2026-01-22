@@ -7,6 +7,9 @@ import axios from "axios";
 import { serverUrl } from "../App";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../firebase";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ClipLoader } from "react-spinners";
 
 const SignUp = () => {
     const primaryColor = "#f25a13";
@@ -21,8 +24,24 @@ const SignUp = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [mobile, setMobile] = useState("");
+    const [error, setError] = useState("");
+    const [loader, setLoader] = useState(false);
 
     const handleSignup = async (e) => {
+        e.preventDefault();
+        setLoader(true);
+        if(!fullName){
+            setError("Please enter your full name");
+        }
+        else if(!email){
+            setError("Please enter your email");
+        }
+        else if(!password){
+            setError("Please enter your password");
+        }
+        else if(!mobile){
+            setError("Please enter your mobile number");
+        }
         try {
             const result = await axios.post(
                 `${serverUrl}/api/auth/signup`,
@@ -35,13 +54,18 @@ const SignUp = () => {
                 },
                 { withCredentials: true },
             );
-            console.log(result);
+            setError("");
+            setLoader(false);
+            toast.success("SignUp successful");
         } catch (error) {
-            console.log(error);
+            setLoader(false);
+            setError(error.response?.data?.message);
+            toast.error(error.response?.data?.message);
         }
     };
 
-    const handleGoogleAuth = async () => {
+    const handleGoogleAuth = async (e) => {
+        e.preventDefault();
         try {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
@@ -54,11 +78,12 @@ const SignUp = () => {
                     role: "user",
                 },
                 { withCredentials: true },
-            );
-            console.log(result);
-            console.log(data);
+            ); 
+            setError("");
+            toast.success("SignUp with Google login successful");
         } catch (error) {
-            console.log("Google Auth Error:", error.response?.data || error);
+            setError(error.response?.data?.message);
+            toast.error(error.response?.data?.message);
         }
     };
 
@@ -67,6 +92,7 @@ const SignUp = () => {
             className="min-h-screen w-full flex items-center justify-center p-4"
             style={{ backgroundColor: bgColor }}
         >
+            <ToastContainer />
             <div
                 className="bg-white rounded-xl shadow-lg w-full max-w-md p-8 "
                 style={{ borderColor: borderColor }}
@@ -96,6 +122,7 @@ const SignUp = () => {
                         placeholder="Enter Your Full Name"
                         onChange={(e) => setFullName(e.target?.value)}
                         value={fullName}
+                        required
                     />
                 </div>
 
@@ -113,6 +140,7 @@ const SignUp = () => {
                         placeholder="Enter Your Email"
                         onChange={(e) => setEmail(e.target?.value)}
                         value={email}
+                        required
                     />
                 </div>
 
@@ -130,6 +158,7 @@ const SignUp = () => {
                         placeholder="7081......"
                         onChange={(e) => setMobile(e.target?.value)}
                         value={mobile}
+                        required
                     />
                 </div>
 
@@ -148,6 +177,7 @@ const SignUp = () => {
                             placeholder="Enter password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            required
                         />
 
                         <button
@@ -196,9 +226,14 @@ const SignUp = () => {
                         hoverColor: "#e24310",
                     }}
                     onClick={handleSignup}
+                    disabled={loader}
                 >
-                    SignUp
+                    {loader ? <ClipLoader size={20} color="white" /> : "SignUp"}
                 </button>
+
+                {error && (
+                    <p className="text-red-500 text-center mt-2">{error}</p>
+                )}
 
                 <button
                     className={`w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition duration-200 border-gray-400 cursor-pointer hover:bg-[#f25a13] hover:text-white hover:border-[#f25a13]`}

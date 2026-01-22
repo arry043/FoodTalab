@@ -9,6 +9,10 @@ import { serverUrl } from "../App";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../firebase";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ClipLoader } from "react-spinners";
+
 const SignIn = () => {
     const primaryColor = "#f25a13";
     // const primaryColor="#ff4d2d"
@@ -19,8 +23,13 @@ const SignIn = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loader, setLoader] = useState(false);
+
 
     const handleSignin = async (e) => {
+        e.preventDefault();
+        setLoader(true);
         try {
             const result = await axios.post(
                 `${serverUrl}/api/auth/signin`,
@@ -31,8 +40,12 @@ const SignIn = () => {
                 { withCredentials: true },
             );
             console.log(result);
+            setError("");
+            setLoader(false);
         } catch (error) {
-            console.log(error);
+            setLoader(false);
+            setError(error.response?.data?.message);
+            toast.error(error.response?.data?.message);
         }
     };
 
@@ -48,10 +61,12 @@ const SignIn = () => {
                 },
                 { withCredentials: true },
             );
+            toast.success("SignIn with Google login successful");
             console.log(result);
             console.log(data);
         } catch (error) {
             console.log("Google Auth Error:", error.response?.data || error);
+            toast.error(error.response?.data?.message);
         }
     };
 
@@ -60,6 +75,7 @@ const SignIn = () => {
             className="min-h-screen w-full flex items-center justify-center p-4"
             style={{ backgroundColor: bgColor }}
         >
+            <ToastContainer />
             <div
                 className="bg-white rounded-xl shadow-lg w-full max-w-md p-8 "
                 style={{ borderColor: borderColor }}
@@ -89,6 +105,7 @@ const SignIn = () => {
                         placeholder="Enter Your Email"
                         onChange={(e) => setEmail(e.target?.value)}
                         value={email}
+                        required
                     />
                 </div>
 
@@ -107,6 +124,7 @@ const SignIn = () => {
                             placeholder="Enter password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            required
                         />
 
                         <button
@@ -138,9 +156,15 @@ const SignIn = () => {
                         hoverColor: "#e24310",
                     }}
                     onClick={handleSignin}
+                    disabled={loader}
                 >
-                    SignIn
+                    {loader ? <ClipLoader size={20} color="white" /> : "SignIn"}
                 </button>
+
+                {error && (
+                    <p className="text-red-500 text-center mt-2">{error}</p>
+                )}
+
 
                 {/* google signin */}
                 <button

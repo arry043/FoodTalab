@@ -6,6 +6,11 @@ import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { serverUrl } from "../App";
+
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ClipLoader } from "react-spinners";
+
 const ForgotPassword = () => {
     const primaryColor = "#f25a13";
     // const primaryColor="#ff4d2d"
@@ -16,32 +21,43 @@ const ForgotPassword = () => {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
-    const [step, setStep] = useState(1 );
+    const [step, setStep] = useState(1);
     const [otp, setOtp] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loader, setLoader] = useState(false);
 
 
     const handleSendOtp = async (e) => {
+        e.preventDefault();
+        setLoader(true);
         try {
             const result = await axios.post(
                 `${serverUrl}/api/auth/send-otp`,
                 {
                     email,
                 },
-                { withCredentials: true }
+                { withCredentials: true },
             );
             console.log(result);
             setStep(2);
             alert(
-                "Otp sent successfully, please check your email and enter the otp"
-            )
+                "Otp sent successfully, please check your email and enter the otp",
+            );
+            setError("");
+            setLoader(false);
+            toast.success("Otp sent successfully");
         } catch (error) {
-            console.log("Step-1 Error: ", error);
+            setLoader(false);
+            setError(error.response?.data?.message);
+            toast.error(error.response?.data?.message);
         }
-    }
+    };
 
     const handleVarifyOtp = async (e) => {
+        e.preventDefault();
+        setLoader(true);
         try {
             const result = await axios.post(
                 `${serverUrl}/api/auth/varify-otp`,
@@ -49,20 +65,29 @@ const ForgotPassword = () => {
                     email,
                     otp,
                 },
-                { withCredentials: true }
+                { withCredentials: true },
             );
             console.log(result);
+            toast.success("Otp varified successfully");
             setStep(3);
+            setError("");
+            setLoader(false);
         } catch (error) {
-            console.log("Step-2 Error: ", error);
+            setError(error.response?.data?.message);
+            setLoader(false);
+            toast.error(error.response?.data?.message);
         }
-    }
+    };
 
     const handleResetPassword = async (e) => {
+        e.preventDefault();
+        setLoader(true);
         if (newPassword !== confirmPassword) {
-            alert("Passwords do not match");
+            setError("Passwords do not match");
+            toast.error("Passwords do not match");
+            setLoader(false);
             return;
-        } 
+        }
         try {
             const result = await axios.post(
                 `${serverUrl}/api/auth/reset-password`,
@@ -70,21 +95,27 @@ const ForgotPassword = () => {
                     email,
                     newPassword,
                 },
-                { withCredentials: true }
+                { withCredentials: true },
             );
             console.log(result);
+            toast.success("Password reset successful");
             alert("Password reset successful");
             navigate("/signin");
+            setError("");
+            setLoader(false);
         } catch (error) {
-            console.log("Step-3 Error: ", error);
+            setError(error.response?.data?.message);
+            setLoader(false);
+            toast.error(error.response?.data?.message);
         }
-    }
+    };
 
     return (
         <div
             className="min-h-screen w-full flex items-center justify-center p-4"
             style={{ backgroundColor: bgColor }}
         >
+            <ToastContainer />
             <div
                 className="bg-white rounded-xl shadow-lg w-full max-w-md p-8 "
                 style={{ borderColor: borderColor }}
@@ -131,9 +162,15 @@ const ForgotPassword = () => {
                                 hoverColor: "#e24310",
                             }}
                             onClick={handleSendOtp}
+                            disabled={loader}
                         >
-                            Send OTP
+                            {loader ? <ClipLoader size={20} color="white" /> : "Send OTP"}
                         </button>
+                        {error && (
+                            <p className="text-red-500 text-center mt-2">
+                                {error}
+                            </p>
+                        )}
                     </div>
                 )}
 
@@ -180,9 +217,15 @@ const ForgotPassword = () => {
                                 hoverColor: "#e24310",
                             }}
                             onClick={handleVarifyOtp}
+                            disabled={loader}
                         >
-                            Submit OTP
+                            {loader ? <ClipLoader size={20} color="white" /> : "Verify OTP"}
                         </button>
+                        {error && (
+                            <p className="text-red-500 text-center mt-2">
+                                {error}
+                            </p>
+                        )}
                     </div>
                 )}
 
@@ -234,7 +277,9 @@ const ForgotPassword = () => {
                                 type="text"
                                 className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
                                 placeholder="Enter Confirm New Password"
-                                onChange={(e) => setConfirmPassword(e.target?.value)}
+                                onChange={(e) =>
+                                    setConfirmPassword(e.target?.value)
+                                }
                                 value={confirmPassword}
                             />
                         </div>
@@ -247,9 +292,15 @@ const ForgotPassword = () => {
                                 hoverColor: "#e24310",
                             }}
                             onClick={handleResetPassword}
+                            disabled={loader}
                         >
-                            Reset Password
+                            {loader ? <ClipLoader size={20} color="white" /> : "Reset Password"}
                         </button>
+                        {error && (
+                            <p className="text-red-500 text-center mt-2">
+                                {error}
+                            </p>
+                        )}
                     </div>
                 )}
             </div>
