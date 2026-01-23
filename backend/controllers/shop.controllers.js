@@ -57,3 +57,18 @@ export const createAndEditShop = async (req, res) => {
             .json({ message: `Server Error: createShop, ${error}` });
     }
 };
+
+
+export const getMyShop = async (req, res) => {
+    try {
+        const shop = await Shop.findOne({ owner: req.user?._id }).populate("owner item");
+        if (!shop) {
+            return res.status(400).json({ message: "Shop not found" });
+        }
+        return res.status(200).json({ data: shop });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: `Server Error: getMyShop, ${error}` });
+    }
+}

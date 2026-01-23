@@ -31,7 +31,9 @@ const useGetCity = () => {
                 // console.log(`name: ${name}, add1: ${address1}, add2: ${address2}, city: ${city}, pincode: ${pincode} `);
                 // console.log(city);
                 dispatch (setCity(city));
-            } catch (error) {}
+            } catch (error) {
+                console.log("City Error: ", error);
+            }
         });
     }, [userData]);
 };
