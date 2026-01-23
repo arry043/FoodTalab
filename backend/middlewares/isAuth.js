@@ -11,7 +11,7 @@ export const isAuth = async (req, res, next) =>  {
         if(!decodeToken){
             return res.status(401).json({ message: "Unauthorized 2" });
         }
-        console.log(decodeToken);
+        // console.log( "decoded token",decodeToken);
         req.user = decodeToken;
         next();
     } catch (error) {

@@ -10,6 +10,8 @@ import { auth } from "../../firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from "react-spinners";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 
 const SignUp = () => {
     const primaryColor = "#f25a13";
@@ -26,20 +28,18 @@ const SignUp = () => {
     const [mobile, setMobile] = useState("");
     const [error, setError] = useState("");
     const [loader, setLoader] = useState(false);
+    const dispatch = useDispatch();
 
     const handleSignup = async (e) => {
         e.preventDefault();
         setLoader(true);
-        if(!fullName){
+        if (!fullName) {
             setError("Please enter your full name");
-        }
-        else if(!email){
+        } else if (!email) {
             setError("Please enter your email");
-        }
-        else if(!password){
+        } else if (!password) {
             setError("Please enter your password");
-        }
-        else if(!mobile){
+        } else if (!mobile) {
             setError("Please enter your mobile number");
         }
         try {
@@ -54,6 +54,7 @@ const SignUp = () => {
                 },
                 { withCredentials: true },
             );
+            dispatch(setUserData(result?.data));
             setError("");
             setLoader(false);
             toast.success("SignUp successful");
@@ -70,7 +71,7 @@ const SignUp = () => {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
 
-            const {data} = await axios.post(
+            const { data } = await axios.post(
                 `${serverUrl}/api/auth/google-auth`,
                 {
                     fullName: result.user.displayName,
@@ -78,7 +79,8 @@ const SignUp = () => {
                     role: "user",
                 },
                 { withCredentials: true },
-            ); 
+            );
+            dispatch(setUserData(data));
             setError("");
             toast.success("SignUp with Google login successful");
         } catch (error) {

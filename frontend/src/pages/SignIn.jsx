@@ -12,6 +12,8 @@ import { auth } from "../../firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from "react-spinners";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 
 const SignIn = () => {
     const primaryColor = "#f25a13";
@@ -25,6 +27,7 @@ const SignIn = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loader, setLoader] = useState(false);
+    const dispatch = useDispatch();
 
 
     const handleSignin = async (e) => {
@@ -39,7 +42,9 @@ const SignIn = () => {
                 },
                 { withCredentials: true },
             );
-            console.log(result);
+            // console.log(result);
+            dispatch(setUserData(result?.data));
+            toast.success("SignIn successful");
             setError("");
             setLoader(false);
         } catch (error) {
@@ -61,9 +66,10 @@ const SignIn = () => {
                 },
                 { withCredentials: true },
             );
+            dispatch(setUserData(data));
             toast.success("SignIn with Google login successful");
-            console.log(result);
-            console.log(data);
+            // console.log(result);
+            // console.log(data);
         } catch (error) {
             console.log("Google Auth Error:", error.response?.data || error);
             toast.error(error.response?.data?.message);
