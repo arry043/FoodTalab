@@ -3,7 +3,9 @@ import Navbar from "./Navbar";
 
 const UserDashboard = () => {
     return (
-        <Navbar />
+        <div className="w-full min-h-screen bg-[#fff9f6] flex flex-col items-center">
+            <Navbar />
+        </div>
     )
 };
 
