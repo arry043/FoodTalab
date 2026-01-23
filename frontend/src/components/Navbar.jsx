@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IoClose } from "react-icons/io5";
 import axios from "axios";
 import { setUserData } from "../redux/userSlice";
-import serverUrl from "../App";
+import {serverUrl} from "../App";
 
 const Navbar = () => {
     // const { userData, city } = useSelector((state) => {
@@ -24,7 +24,7 @@ const Navbar = () => {
 
     const handleLogout = async (e) => {
         try {
-            const result = await axios.get(`${serverUrl}/api/auth/signout`, {
+            await axios.get(`${serverUrl}/api/auth/signout`, {
                 withCredentials: true,
             });
             dispatch(
@@ -58,10 +58,10 @@ const Navbar = () => {
                 </div>
             </div>
 
-            <div className="flex justify-center items-center gap-5">
+            <div className=" flex justify-center items-center gap-5">
                 <div
                     onClick={() => setShowSearch((prev) => !prev)}
-                    className="cursor-pointer transition-all ease-in-out duration-500 text-[#ff4d2d] text-sm font-medium"
+                    className="md:hidden cursor-pointer transition-all ease-in-out duration-500 text-[#ff4d2d] text-sm font-medium"
                 >
                     {showSearch ? (
                         <IoClose size={25} className="text-[#ff4d2d]" />
