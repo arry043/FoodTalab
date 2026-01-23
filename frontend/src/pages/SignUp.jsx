@@ -54,7 +54,7 @@ const SignUp = () => {
                 },
                 { withCredentials: true },
             );
-            dispatch(setUserData(result?.data));
+            dispatch(setUserData(result?.data ));
             setError("");
             setLoader(false);
             toast.success("SignUp successful");

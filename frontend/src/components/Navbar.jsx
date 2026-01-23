@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { MdLocationPin } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
 import { IoMdCart } from "react-icons/io";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { IoClose } from "react-icons/io5";
+import axios from "axios";
+import { setUserData } from "../redux/userSlice";
+import serverUrl from "../App";
 
 const Navbar = () => {
     // const { userData, city } = useSelector((state) => {
@@ -11,12 +14,26 @@ const Navbar = () => {
     // });
 
     const { userData, city } = useSelector((state) => state?.user);
-    const actualUserData = userData?.data
+    const actualUserData = userData?.data;
     // console.log(actualUserData);
     // console.log(city);
 
-    const [showInfo, setShowInfo] = React.useState(false);
-    const [showSearch, setShowSearch] = React.useState(false);
+    const [showInfo, setShowInfo] = useState(false);
+    const [showSearch, setShowSearch] = useState(false);
+    const dispatch = useDispatch();
+
+    const handleLogout = async (e) => {
+        try {
+            const result = await axios.get(`${serverUrl}/api/auth/signout`, {
+                withCredentials: true,
+            });
+            dispatch(
+                setUserData(null),
+            );
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     return (
         <div
@@ -81,7 +98,10 @@ const Navbar = () => {
                         <div className="md:hidden font-semibold text-sm cursor-pointer hover:text-[#ff4d2d]">
                             My Orders
                         </div>
-                        <div className="text-[#ff4d2d] font-semibold text-sm text-end cursor-pointer hover:text-[#ff4d2d]/75">
+                        <div
+                            onClick={handleLogout}
+                            className="text-[#ff4d2d] font-semibold text-sm text-end cursor-pointer hover:text-[#ff4d2d]/75"
+                        >
                             Logout
                         </div>
                     </div>

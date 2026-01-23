@@ -11,17 +11,19 @@ export const signUp = async (req, res) => {
             return res.status(400).json({ message: "User already exists" });
         }
 
-        if(!fullName){
+        if (!fullName) {
             return res.status(400).json({ message: "Full name is required" });
         }
-        if(!email){
+        if (!email) {
             return res.status(400).json({ message: "Email is required" });
         }
-        if(!password){
+        if (!password) {
             return res.status(400).json({ message: "Password is required" });
         }
-        if(!mobile){
-            return res.status(400).json({ message: "Mobile number is required" });
+        if (!mobile) {
+            return res
+                .status(400)
+                .json({ message: "Mobile number is required" });
         }
         if (!password || password.length < 6) {
             return res
@@ -47,7 +49,7 @@ export const signUp = async (req, res) => {
         res.cookie("token", token, {
             httpOnly: true,
             secure: false,
-            sameSite: "strict",
+            sameSite: "lax",
             maxAge: 24 * 60 * 60 * 1000,
         });
 
@@ -64,15 +66,11 @@ export const signIn = async (req, res) => {
         const { email, password } = req.body;
 
         if (!email) {
-            return res
-                .status(400)
-                .json({ message: "Email is required" });
+            return res.status(400).json({ message: "Email is required" });
         }
 
         if (!password) {
-            return res
-                .status(400)
-                .json({ message: "Password is required" });
+            return res.status(400).json({ message: "Password is required" });
         }
 
         const user = await User.findOne({ email });
@@ -107,7 +105,12 @@ export const signIn = async (req, res) => {
 export const signOut = async (req, res) => {
     const user = req.user;
     try {
-        res.clearCookie("token");
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: false, // same as login
+            sameSite: "lax", // same as login
+            path: "/", // important
+        });
         return res
             .status(200)
             .json({ data: user, message: "logout successfully" });
