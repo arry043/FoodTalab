@@ -12,6 +12,8 @@ import { LuReceipt } from "react-icons/lu";
 
 const Navbar = () => {
     const { userData, city } = useSelector((state) => state?.user);
+    const { myShopData } = useSelector((state) => state?.owner);
+    console.log("myShopData: ",myShopData);
     const actualUserData = userData?.data;
     const role = actualUserData?.role;
 
@@ -30,9 +32,11 @@ const Navbar = () => {
         }
     };
 
+
+
     return (
         <div
-            className={`w-full h-15 md:h-20 flex items-center justify-between md:justify-center gap-10 px-[20px] fixed top-0 z-[9999] bg-[#fff9f6] overflow-visible`}
+            className={`w-full h-15 md:h-17 flex items-center justify-between md:justify-center gap-10 px-[20px] fixed top-0 z-[9999] bg-[#fff9f6] overflow-visible`}
         >
             <h1 className="text-3xl font-bold mb-2 text-[#ff4d2d]">
                 FoodTalab
@@ -77,7 +81,7 @@ const Navbar = () => {
                 )}
 
                 {/* ================= OWNER ADD FOOD BUTTON ================= */}
-                {role === "owner" && (
+                {role === "owner" && myShopData && (
                     <button className="cursor-pointer flex items-center w-10 h-10 md:w-auto md:h-auto hover:bg-[#ff4d2d]/5 px-3 py-1 rounded-full md:rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium">
                         <FaPlus size={18} />
                         <span className="ml-2 hidden md:inline">
