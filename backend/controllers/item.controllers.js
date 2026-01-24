@@ -16,7 +16,7 @@ export const addItem = async (req, res) => {
         }
 
         console.log("shop: ", shop);
-        console.log("user: ",req.user);
+        console.log("user: ", req.user);
 
         const newItem = await Item.create({
             name,
@@ -50,26 +50,37 @@ export const editItem = async (req, res) => {
         if (req.file) {
             image = await uploadOnCloudinary(req.file?.path);
         }
-        const item = await Item.findByIdandUpdate(
+
+        const updateData = {
+            name,
+            description,
+            price,
+            foodType,
+            category,
+        };
+
+        if (image) updateData.image = image;
+
+        const item = await Item.findByIdAndUpdate(
             itemId,
-            {
-                $set: {
-                    name,
-                    description,
-                    price,
-                    foodType,
-                    category,
-                    image,
-                },
-            },
+            { $set: updateData },
             { new: true },
         );
+
         if (!item) {
             return res.status(400).json({ message: "Item not found" });
         }
+
+        const shop = await Shop.findOne({ owner: req.user?.userId }).populate(
+            "items",
+        );
+        if (!shop) {
+            return res.status(400).json({ message: "Shop not found" });
+        }
+
         return res
             .status(200)
-            .json({ data: item, message: "Item updated successfully" });
+            .json({ data: shop, message: "Item updated successfully" });
     } catch (error) {
         return res
             .status(500)
@@ -92,4 +103,4 @@ export const getItemById = async (req, res) => {
             .status(500)
             .json({ message: "Server Error: getItemById", error });
     }
-} 
+};
