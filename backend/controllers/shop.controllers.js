@@ -3,14 +3,16 @@ import uploadOnCloudinary from "../utils/cloudinary.js";
 
 export const createAndEditShop = async (req, res) => {
     try {
+        // console.log(req);
         const { name, address, city, state, pincode, contact, email } =
             req.body;
         let image = null;
         if (req.file) {
+            // console.log(req.file);
             image = await uploadOnCloudinary(req.file?.path);
         }
 
-        let shop = await Shop.findOne({ owner: req.user?._id });
+        let shop = await Shop.findOne({ owner: req.user?.userId });
         if (!shop) {
             const newShop = await Shop.create({
                 name,
@@ -21,7 +23,7 @@ export const createAndEditShop = async (req, res) => {
                 contact,
                 email,
                 image,
-                owner: req.user?._id,
+                owner: req.user?.userId,
             });
 
             await newShop.populate("owner");
@@ -32,7 +34,8 @@ export const createAndEditShop = async (req, res) => {
         }
 
         shop = await Shop.findByIdAndUpdate(
-            { _id: shop._id }, {
+            { _id: shop._id },
+            {
                 name,
                 address,
                 city,
@@ -42,7 +45,7 @@ export const createAndEditShop = async (req, res) => {
                 email,
                 image,
             },
-            { new: true }
+            { new: true },
         );
 
         await shop.populate("owner");
@@ -50,7 +53,6 @@ export const createAndEditShop = async (req, res) => {
             data: shop,
             message: "Shop updated successfully",
         });
-
     } catch (error) {
         return res
             .status(500)
@@ -58,10 +60,11 @@ export const createAndEditShop = async (req, res) => {
     }
 };
 
-
 export const getMyShop = async (req, res) => {
     try {
-        const shop = await Shop.findOne({ owner: req.user?._id }).populate("owner item");
+        const shop = await Shop.findOne({ owner: req.user?.userId }).populate(
+            "owner item",
+        );
         if (!shop) {
             return res.status(400).json({ message: "Shop not found" });
         }
@@ -71,4 +74,4 @@ export const getMyShop = async (req, res) => {
             .status(500)
             .json({ message: `Server Error: getMyShop, ${error}` });
     }
-}
+};

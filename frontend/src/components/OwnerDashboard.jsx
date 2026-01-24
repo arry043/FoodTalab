@@ -2,6 +2,7 @@ import React from "react";
 import Navbar from "./Navbar";
 import { useSelector } from "react-redux";
 import { GiForkKnifeSpoon } from "react-icons/gi";
+import { Link } from "react-router-dom";
 
 const OwnerDashboard = () => {
     const { myShopData } = useSelector((state) => state.owner);
@@ -25,9 +26,11 @@ const OwnerDashboard = () => {
                                 </span>{" "}
                                 and reach thounds of customers hunger everyday
                             </p>
-                            <button className="cursor-pointer mt-5 px-6 py-2 rounded-full bg-[#ff4d2d] text-white text-sm sm:text-base font-semibold shadow-md hover:bg-[#fa7e65] hover:shadow-lg transition-all duration-300">
+                            <Link 
+                            to="create-edit-shop"
+                            className="cursor-pointer mt-5 px-6 py-2 rounded-full bg-[#ff4d2d] text-white text-sm sm:text-base font-semibold shadow-md hover:bg-[#fa7e65] hover:shadow-lg transition-all duration-300">
                                 Get Started
-                            </button>{" "}
+                            </Link>{" "}
                         </div>
                     </div>
                 </div>

@@ -6,9 +6,9 @@ import { setMyShopData } from "../redux/ownerSlice";
 
 function useGetMyShop() {
     const dispatch = useDispatch();
-
+    const myShopData = useSelector((state) => state.owner.myShopData);
     useEffect(() => {
-        if (userData) return;
+        if (myShopData) return;
         const fetchShop = async () => {
             try {
                 const result = await axios.get(`${serverUrl}/api/shop/myshop`, {
@@ -22,7 +22,7 @@ function useGetMyShop() {
         };
         fetchShop();
     }, [
-        userData
+        myShopData
     ]);
 }
 
