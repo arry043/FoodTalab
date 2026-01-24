@@ -3,6 +3,7 @@ import Navbar from "./Navbar";
 import { useSelector } from "react-redux";
 import { GiForkKnifeSpoon } from "react-icons/gi";
 import { Link, useNavigate } from "react-router-dom";
+import OwnerItemCard from "./OwnerItemCard";
 
 const OwnerDashboard = () => {
     const { myShopData } = useSelector((state) => state.owner);
@@ -77,7 +78,10 @@ const OwnerDashboard = () => {
                                 Edit Shop
                             </button>
 
-                            <Link to={"add-item"} className="px-4 py-2 text-sm font-semibold rounded-lg bg-[#ff4d2d] text-white hover:bg-[#e54326] transition shadow">
+                            <Link
+                                to={"add-item"}
+                                className="px-4 py-2 text-sm font-semibold rounded-lg bg-[#ff4d2d] text-white hover:bg-[#e54326] transition shadow"
+                            >
                                 Add Items
                             </Link>
                         </div>
@@ -135,6 +139,14 @@ const OwnerDashboard = () => {
                                     </Link>{" "}
                                 </div>
                             </div>
+                        </div>
+                    )}
+
+                    {myShopData.items?.length > 0 && (
+                        <div className=" grid grid-cols-1 md:grid-cols-2 items-center gap-4 max-w-3xl">
+                            {myShopData.items.map((item, index) => (
+                                <OwnerItemCard key={index} data={item} />
+                            ))}
                         </div>
                     )}
                 </div>

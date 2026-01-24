@@ -9,6 +9,7 @@ import useGetCity from "./hooks/useGetCity";
 import useGetMyShop from "./hooks/useGetMyShop";
 import CreateEditShop from "./pages/CreateEditShop";
 import AddItem from "./pages/AddItem";
+import EditItem from "./pages/EditItem";
 
 export const serverUrl = "http://localhost:8000";
 
@@ -28,6 +29,7 @@ function App() {
             <Route path="/forgot-password" element={ !userData ? <Navigate to="/signup" /> : <ForgotPassword />} />
             <Route path="/create-edit-shop" element={ !userData ? <Navigate to="/signin" /> : <CreateEditShop />} />
             <Route path="/add-item" element={ !userData ? <Navigate to="/signin" /> : <AddItem />} />
+            <Route path="/edit-item/:itemId" element={ !userData ? <Navigate to="/signin" /> : <EditItem />} />
         </Routes>
     );
 }

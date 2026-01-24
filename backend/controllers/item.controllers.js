@@ -76,3 +76,20 @@ export const editItem = async (req, res) => {
             .json({ message: "Server Error: editItem", error });
     }
 };
+
+export const getItemById = async (req, res) => {
+    try {
+        const itemId = req.params?.itemId;
+        const item = await Item.findById(itemId);
+        if (!item) {
+            return res.status(400).json({ message: "Item not found" });
+        }
+        return res
+            .status(200)
+            .json({ data: item, message: "Item found successfully" });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: "Server Error: getItemById", error });
+    }
+} 
