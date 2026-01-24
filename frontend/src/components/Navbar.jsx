@@ -9,6 +9,7 @@ import { setUserData } from "../redux/userSlice";
 import { serverUrl } from "../App";
 import { FaPlus } from "react-icons/fa";
 import { LuReceipt } from "react-icons/lu";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
     const { userData, city } = useSelector((state) => state?.user);
@@ -82,12 +83,12 @@ const Navbar = () => {
 
                 {/* ================= OWNER ADD FOOD BUTTON ================= */}
                 {role === "owner" && myShopData && (
-                    <button className="cursor-pointer flex items-center w-10 h-10 md:w-auto md:h-auto hover:bg-[#ff4d2d]/5 px-3 py-1 rounded-full md:rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium">
+                    <Link to={"add-item"} className="cursor-pointer flex items-center w-10 h-10 md:w-auto md:h-auto hover:bg-[#ff4d2d]/5 px-3 py-1 rounded-full md:rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium">
                         <FaPlus size={18} />
                         <span className="ml-2 hidden md:inline">
                             Add Food Items
                         </span>
-                    </button>
+                    </Link>
                 )}
 
                 {/* ================= USER CART ================= */}

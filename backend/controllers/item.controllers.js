@@ -10,10 +10,13 @@ export const addItem = async (req, res) => {
             image = await uploadOnCloudinary(req.file?.path);
         }
 
-        const shop = await Shop.findOne({ owner: req.user?._id });
+        const shop = await Shop.findOne({ owner: req.user?.userId });
         if (!shop) {
             return res.status(400).json({ message: "Shop not found" });
         }
+
+        console.log("shop: ", shop);
+        console.log("user: ",req.user);
 
         const newItem = await Item.create({
             name,
@@ -22,13 +25,16 @@ export const addItem = async (req, res) => {
             foodType,
             category,
             image,
-            shop: req.user?.shop?._id,
+            shop: shop?._id,
         });
-        if (newItem) {
-            return res
-                .status(200)
-                .json({ data: newItem, message: "Item added successfully" });
-        }
+
+        shop.items.push(newItem?._id);
+        await shop.save();
+        await shop.populate("items owner");
+
+        return res
+            .status(200)
+            .json({ data: shop, message: "Item added successfully" });
     } catch (error) {
         return res
             .status(500)
