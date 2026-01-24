@@ -63,7 +63,7 @@ export const createAndEditShop = async (req, res) => {
 export const getMyShop = async (req, res) => {
     try {
         const shop = await Shop.findOne({ owner: req.user?.userId }).populate(
-            "owner item",
+            "owner items",
         );
         if (!shop) {
             return res.status(400).json({ message: "Shop not found" });

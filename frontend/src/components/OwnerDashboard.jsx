@@ -26,13 +26,23 @@ const OwnerDashboard = () => {
                                 </span>{" "}
                                 and reach thounds of customers hunger everyday
                             </p>
-                            <Link 
-                            to="create-edit-shop"
-                            className="cursor-pointer mt-5 px-6 py-2 rounded-full bg-[#ff4d2d] text-white text-sm sm:text-base font-semibold shadow-md hover:bg-[#fa7e65] hover:shadow-lg transition-all duration-300">
+                            <Link
+                                to="create-edit-shop"
+                                className="cursor-pointer mt-5 px-6 py-2 rounded-full bg-[#ff4d2d] text-white text-sm sm:text-base font-semibold shadow-md hover:bg-[#fa7e65] hover:shadow-lg transition-all duration-300"
+                            >
                                 Get Started
                             </Link>{" "}
                         </div>
                     </div>
+                </div>
+            )}
+
+            {myShopData && (
+                <div className=" w-full flex flex-col items-center gap-6 px-4 sm:px-6 mt-10">
+                    <h1 className="text-2x1 sm:text-3x1 ☐ text-gray-900 flex items-center gap-3 mt-8 text-center">
+                        <GiForkKnifeSpoon className=" ■ text-[#ff4d2d] w-14 h-14 " />
+                        Welcome to {myShopData.name}
+                    </h1>
                 </div>
             )}
         </div>

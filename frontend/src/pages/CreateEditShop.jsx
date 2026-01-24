@@ -1,8 +1,8 @@
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { GiForkKnifeSpoon } from "react-icons/gi";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import axios from "axios";
 import { serverUrl } from "../App";
@@ -12,31 +12,28 @@ function CreateEditShop() {
     const primaryColor = "#f25a13";
     const dispatch = useDispatch();
     const { myShopData } = useSelector((state) => state.owner);
-    
+
     const { city, state, pincode, address } = useSelector(
         (state) => state.user,
     );
 
-    const [name, setName] = useState(myShopData?.data?.name || "");
-    const [email, setEmail] = useState(myShopData?.data?.email || "");
-    const [contact, setContact] = useState(myShopData?.data?.contact || "");
+    const [name, setName] = useState(myShopData?.name || "");
+    const [email, setEmail] = useState(myShopData?.email || "");
+    const [contact, setContact] = useState(myShopData?.contact || "");
     const [inputAddress, setInputAddress] = useState(
-        myShopData?.data?.address || address,
+        myShopData?.address || address,
     );
-    const [inputCity, setInputCity] = useState(myShopData?.data?.city || city);
-    const [inputState, setInputState] = useState(
-        myShopData?.data?.state || state,
-    );
+    const [inputCity, setInputCity] = useState(myShopData?.city || city);
+    const [inputState, setInputState] = useState(myShopData?.state || state);
     const [inputPincode, setInputPincode] = useState(
-        myShopData?.data?.pincode || pincode,
+        myShopData?.pincode || pincode,
     );
     const [frontendImage, setFrontendImage] = useState(
-        myShopData?.data?.image || null,
+        myShopData?.image || null,
     );
-    const [backendImage, setBackendImage] = useState(
-        myShopData?.data?.image || null,
-    );
+    const [backendImage, setBackendImage] = useState(myShopData?.image || null);
     const [close, setClose] = useState(false);
+    const navigate = useNavigate();
 
     const fileInputRef = useRef(null);
 
@@ -46,7 +43,20 @@ function CreateEditShop() {
         setFrontendImage(URL.createObjectURL(file));
     };
 
-    const handleHandleSubmit = async (e) => {
+    useEffect(() => {
+        if (myShopData) {
+            setName(myShopData.name || "");
+            setEmail(myShopData.email || "");
+            setContact(myShopData.contact || "");
+            setInputAddress(myShopData.address || "");
+            setInputCity(myShopData.city || "");
+            setInputState(myShopData.state || "");
+            setInputPincode(myShopData.pincode || "");
+            setFrontendImage(myShopData.image || null);
+        }
+    }, [myShopData]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const formData = new FormData();
@@ -57,7 +67,9 @@ function CreateEditShop() {
             formData.append("city", inputCity);
             formData.append("state", inputState);
             formData.append("pincode", inputPincode);
-            formData.append("image", backendImage);
+            if (backendImage instanceof File) {
+                formData.append("image", backendImage);
+            }
 
             const result = await axios.post(
                 `${serverUrl}/api/shop/create-edit`,
@@ -66,6 +78,7 @@ function CreateEditShop() {
             );
             console.log(result);
             dispatch(setMyShopData(result?.data?.data));
+            navigate("/");
         } catch (error) {
             console.log("Error: adding shop: ", error);
         }
@@ -249,10 +262,10 @@ from-orange-50 relative Ito-white min-h-screen"
                     </div>
 
                     <button
-                        onClick={handleHandleSubmit}
+                        onClick={handleSubmit}
                         className="w-full cursor-pointer bg-[#ff4d2d] text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:bg-orange-5 00 hover:shadow-lg transition-all duration-200"
                     >
-                        {myShopData ? "Save Changes Shop" : "Register Shop"}
+                        {myShopData ? "Save updates" : "Register Shop"}
                     </button>
                 </form>
             </div>
