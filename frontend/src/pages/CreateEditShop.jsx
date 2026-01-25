@@ -32,7 +32,8 @@ function CreateEditShop() {
         myShopData?.image || null,
     );
     const [backendImage, setBackendImage] = useState(myShopData?.image || null);
-    const [close, setClose] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
 
     const fileInputRef = useRef(null);
@@ -58,6 +59,7 @@ function CreateEditShop() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         try {
             const formData = new FormData();
             formData.append("name", name);
@@ -78,8 +80,10 @@ function CreateEditShop() {
             );
             console.log(result);
             dispatch(setMyShopData(result?.data?.data));
+            setLoading(false);
             navigate("/");
         } catch (error) {
+            setLoading(false);
             console.log("Error: adding shop: ", error);
         }
     };
@@ -264,8 +268,19 @@ from-orange-50 relative Ito-white min-h-screen"
                     <button
                         onClick={handleSubmit}
                         className="w-full cursor-pointer bg-[#ff4d2d] text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:bg-orange-5 00 hover:shadow-lg transition-all duration-200"
+                        disabled={loading}
                     >
-                        {myShopData ? "Save updates" : "Register Shop"}
+                        {loading ? (
+                            <ClipLoader
+                                color="#fff"
+                                loading={loading}
+                                size={20}
+                            />
+                        ) : myShopData ? (
+                            "Save updates"
+                        ) : (
+                            "Register Shop"
+                        )}
                     </button>
                 </form>
             </div>

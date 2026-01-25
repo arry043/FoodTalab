@@ -6,7 +6,9 @@ import { IoClose } from "react-icons/io5";
 import axios from "axios";
 import { serverUrl } from "../App";
 import { useDispatch, useSelector } from "react-redux";
-import { setMyShopData } from "../redux/ownerSlice";
+import { setMyShopData } from "../redux/ownerSlice"; 
+import { ClipLoader } from "react-spinners";
+import { toast, ToastContainer } from "react-toastify";
 
 function EditItem() {
     const primaryColor = "#f25a13";
@@ -24,6 +26,7 @@ function EditItem() {
     const [category, setCategory] = useState("");
     const [frontendImage, setFrontendImage] = useState("");
     const [backendImage, setBackendImage] = useState(null);
+    const [loading, setLoading] = useState(false );
 
     const categories = [
         "Snacks",
@@ -48,6 +51,7 @@ function EditItem() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         try {
             const formData = new FormData();
             formData.append("name", name);
@@ -62,11 +66,15 @@ function EditItem() {
                 formData,
                 { withCredentials: true },
             );
- 
+
             dispatch(setMyShopData(result.data.data));
+            setLoading(false);
+            toast.success("Item updated successfully");
             navigate("/");
         } catch (error) {
+            setLoading(false);
             console.log("Edit item error:", error);
+            toast.error("Failed to update item");
         }
     };
 
@@ -96,6 +104,7 @@ function EditItem() {
 
     return (
         <div className="flex justify-center flex-col items-center p-6 bg-gradient-to-br from-orange-50 relative Ito-white min-h-screen">
+            <ToastContainer />
             <div className="absolute top-[20px] left-[20px] z-[10] mb-[10px]">
                 <Link to="/">
                     <IoIosArrowRoundBack
@@ -245,8 +254,16 @@ function EditItem() {
                     <button
                         onClick={handleSubmit}
                         className="w-full cursor-pointer bg-[#ff4d2d] text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:bg-orange-5 00 hover:shadow-lg transition-all duration-200"
+                        disabled={loading}
                     >
-                        Update Item
+                        {loading ? (
+                            <ClipLoader
+                                color="#fff"
+                                loading={loading}
+                                size={20}
+                            />
+                        ): "Update Item"}
+
                     </button>
                 </form>
             </div>
