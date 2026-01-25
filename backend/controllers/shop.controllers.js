@@ -79,3 +79,26 @@ export const getMyShop = async (req, res) => {
             .json({ message: `Server Error: getMyShop, ${error}` });
     }
 };
+
+export const getShopByCity = async (req, res) => {
+    try {
+        const { city } = req.params;
+        const shops = await Shop.find({
+            city: { $regex: new RegExp(`${city}$`, "i") },
+        })
+            .populate("owner")
+            .populate({
+                path: "items",
+                options: { sort: { updatedAt: -1 } },
+            });
+
+        if(!shops) {
+            return res.status(400).json({ message: "Shops not found, in your city" });
+        }
+        return res.status(200).json({ data: shops });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: `Server Error: getShopByCity, ${error}` });
+    }
+};
