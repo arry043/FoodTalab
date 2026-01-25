@@ -1,12 +1,102 @@
-import React from "react";
+import React, { useRef } from "react";
 import Navbar from "./Navbar";
+import CategoryCard from "./CategoryCard";
+import { category } from "../category.js";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 const UserDashboard = () => {
+    // REDUX - getting user data
+    const { userData, city } = useSelector((state) => state.user);
+    // console.log(userData);
+    
+    // SCROLL
+    const scrollRef = useRef(null);
+    const scrollLeft = () => {
+        scrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
+    };
+    const scrollRight = () => {
+        scrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
+    };
+
     return (
-        <div className="w-full min-h-screen bg-[#fff9f6] flex flex-col items-center">
+        <div className="w-full min-h-screen bg-white flex flex-col items-center">
             <Navbar />
+
+            <div className="w-full max-w-7xl px-5 mt-10 md:mt-17 relative">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                        {userData?.data?.fullName}, what's on your mind today? 😋
+                    </h2>
+
+                    <div className="hidden md:flex gap-3">
+                        <button
+                            onClick={scrollLeft}
+                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
+                        >
+                            <FaChevronLeft size={14} className="md:text-base" />
+                        </button>
+
+                        <button
+                            onClick={scrollRight}
+                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
+                        >
+                            <FaChevronRight
+                                size={14}
+                                className="md:text-base"
+                            />
+                        </button>
+                    </div>
+                </div>
+
+                {/* CATEGORY STRIP */}
+                <div
+                    ref={scrollRef}
+                    className="flex gap-10 overflow-x-auto scrollbar-hide scroll-smooth py-2"
+                >
+                    {category.map((cate, index) => (
+                        <CategoryCard key={index} data={cate} />
+                    ))}
+                </div>
+            </div>
+            <div className="w-full max-w-7xl px-5 mt-10 md:mt-17 relative">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                        Best Shops in {city}
+                    </h2>
+
+                    <div className="hidden md:flex gap-3">
+                        <button
+                            onClick={scrollLeft}
+                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
+                        >
+                            <FaChevronLeft size={14} className="md:text-base" />
+                        </button>
+
+                        <button
+                            onClick={scrollRight}
+                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
+                        >
+                            <FaChevronRight
+                                size={14}
+                                className="md:text-base"
+                            />
+                        </button>
+                    </div>
+                </div>
+
+                {/* CATEGORY STRIP */}
+                <div
+                    ref={scrollRef}
+                    className="flex gap-10 overflow-x-auto scrollbar-hide scroll-smooth py-2"
+                >
+                    {category.map((cate, index) => (
+                        <CategoryCard key={index} data={cate} />
+                    ))}
+                </div>
+            </div>
         </div>
-    )
+    );
 };
 
 export default UserDashboard;
