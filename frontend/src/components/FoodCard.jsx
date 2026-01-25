@@ -1,10 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaDrumstickBite, FaLeaf, FaStar } from "react-icons/fa";
 
 function FoodCard({ data }) {
+    const [quantity, setQuantity] = useState(0);
+
+    const handleIncreseQuantity = () => {
+        const newQuantity = quantity + 1;
+        setQuantity(newQuantity);
+    };
+    const handleDecreseQuantity = () => {
+        if(quantity === 0) {
+            return;
+        }
+        const newQuantity = quantity - 1;
+        setQuantity(newQuantity);
+    };
 
     const renderStars = (rating) => {
-
         const stars = [];
         const rounded = Math.round(rating);
         for (let i = 0; i < rounded; i++) {
@@ -54,7 +66,6 @@ function FoodCard({ data }) {
 
             {/* CONTENT */}
             <div className="flex flex-col flex-1 p-4">
-
                 {/* NAME + RATING COUNT */}
                 <div className="flex items-start justify-between gap-2">
                     <h3 className="text-base font-semibold text-gray-800 line-clamp-1">
@@ -72,9 +83,7 @@ function FoodCard({ data }) {
                     )}
                 </div>
 
-                <p className="text-xs text-gray-500 mt-0.5">
-                    {data.category}
-                </p>
+                <p className="text-xs text-gray-500 mt-0.5">{data.category}</p>
 
                 <p className="text-sm text-gray-500 mt-2 line-clamp-2">
                     {data.description}
@@ -86,13 +95,41 @@ function FoodCard({ data }) {
                         ₹{data.price}
                     </span>
 
-                    <button
-                        className="px-4 py-1.5 text-sm font-semibold rounded-full
-                        border border-[#ff4d2d] text-[#ff4d2d]
-                        hover:bg-[#ff4d2d] hover:text-white transition"
-                    >
-                        ADD
-                    </button>
+                    {/* 👉 SAME HEIGHT WRAPPER */}
+                    <div className="h-[36px] flex items-center">
+                        {quantity === 0 ? (
+                            <button
+                                onClick={handleIncreseQuantity}
+                                className="h-full px-4 text-sm font-semibold rounded-full
+                border border-[#ff4d2d] text-[#ff4d2d] cursor-pointer
+                hover:bg-[#ff4d2d] hover:text-white transition"
+                            >
+                                ADD
+                            </button>
+                        ) : (
+                            <div
+                                className="h-full flex items-center gap-3 px-3
+                border border-[#ff4d2d] rounded-full
+                text-[#ff4d2d] font-semibold"
+                            >
+                                <button
+                                    onClick={handleDecreseQuantity}
+                                    className="text-lg leading-none cursor-pointer"
+                                >
+                                    −
+                                </button>
+
+                                <span className="text-sm">{quantity}</span>
+
+                                <button
+                                    onClick={handleIncreseQuantity}
+                                    className="text-lg leading-none cursor-pointer"
+                                >
+                                    +
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
