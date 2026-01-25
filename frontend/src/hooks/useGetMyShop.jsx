@@ -6,7 +6,8 @@ import { setMyShopData } from "../redux/ownerSlice";
 
 function useGetMyShop() {
     const dispatch = useDispatch();
-    const myShopData = useSelector((state) => state.owner.myShopData);
+    const {myShopData} = useSelector((state) => state.owner);
+    const {userData} = useSelector((state) => state.user);
     useEffect(() => {
         if (myShopData) return;
         const fetchShop = async () => {
@@ -16,14 +17,12 @@ function useGetMyShop() {
                 });
                 // console.log(result.data);
                 dispatch(setMyShopData(result?.data?.data));
-            } catch (error) { 
+            } catch (error) {
                 console.log("My Shop Error: ", error);
             }
         };
         fetchShop();
-    }, [
-        myShopData
-    ]);
+    }, [myShopData, userData]);
 }
 
 export default useGetMyShop;

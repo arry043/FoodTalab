@@ -5,10 +5,11 @@ import { category } from "../category.js";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import ShopsInMyCityCard from "./ShopsInMyCityCard.jsx";
+import FoodCard from "./FoodCard.jsx";
 
 const UserDashboard = () => {
     // REDUX - getting user data
-    const { userData, city, shopsInMyCity } = useSelector(
+    const { userData, city, shopsInMyCity, itemsInMyCity } = useSelector(
         (state) => state.user,
     );
     // console.log(userData);
@@ -122,39 +123,14 @@ const UserDashboard = () => {
                 </div>
             </div>
             {/* PRODUCT */}
-            <div className="w-full max-w-7xl px-5 mt-10 md:mt-17 relative">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                        Suggested foods for you
-                    </h2>
+            <div className="w-full max-w-7xl px-5 mt-10">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    Suggested foods for you 😋
+                </h2>
 
-                    <div className="hidden md:flex gap-3">
-                        <button
-                            onClick={scrollCategoryLeft}
-                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
-                        >
-                            <FaChevronLeft size={14} className="md:text-base" />
-                        </button>
-
-                        <button
-                            onClick={scrollCategoryRight}
-                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
-                        >
-                            <FaChevronRight
-                                size={14}
-                                className="md:text-base"
-                            />
-                        </button>
-                    </div>
-                </div>
-
-                {/* CATEGORY STRIP */}
-                <div
-                    ref={categoryScrollRef}
-                    className="flex gap-10 overflow-x-auto scrollbar-hide scroll-smooth py-2"
-                >
-                    {category.map((cate, index) => (
-                        <CategoryCard key={index} data={cate} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 place-items-stretch">
+                    {itemsInMyCity?.map((item, index) => (
+                        <FoodCard key={index} data={item} />
                     ))}
                 </div>
             </div>
