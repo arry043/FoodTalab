@@ -109,3 +109,32 @@ export const getItemById = async (req, res) => {
             .json({ message: "Server Error: getItemById", error });
     }
 };
+
+export const deleteItem = async (req, res) => {
+    try {
+        const itemId = req.params?.itemId;
+        const item = await Item.findByIdAndDelete(itemId, { new: true });
+        if (!item) {
+            return res.status(400).json({ message: "Item not found" });
+        }
+        const shop = await Shop.findOne({ owner: req.user?.userId });
+
+        if (!shop) {
+            return res.status(400).json({ message: "Shop not found" });
+        }
+
+        shop.items = shop.items.filter((id) => id.toString() !== itemId);
+        await shop.save();
+        await shop.populate({
+            path: "items",
+            options: { sort: { updatedAt: -1 } },
+        });
+        return res
+            .status(200)
+            .json({ data: shop, message: "Item deleted successfully" });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: "Server Error: deleteItem", error });
+    }
+};
