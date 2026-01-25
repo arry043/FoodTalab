@@ -47,6 +47,10 @@ const itemSchema = mongoose.Schema(
             type: String,
             required: true,
         },
+        rating: {
+            avg: { type: Number, default: 0 },
+            count: { type: Number, default: 0 },
+        }
     },
     { timestamps: true },
 );
