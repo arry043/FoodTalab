@@ -121,6 +121,43 @@ const UserDashboard = () => {
                         ))}
                 </div>
             </div>
+            {/* PRODUCT */}
+            <div className="w-full max-w-7xl px-5 mt-10 md:mt-17 relative">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                        Suggested foods for you
+                    </h2>
+
+                    <div className="hidden md:flex gap-3">
+                        <button
+                            onClick={scrollCategoryLeft}
+                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
+                        >
+                            <FaChevronLeft size={14} className="md:text-base" />
+                        </button>
+
+                        <button
+                            onClick={scrollCategoryRight}
+                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
+                        >
+                            <FaChevronRight
+                                size={14}
+                                className="md:text-base"
+                            />
+                        </button>
+                    </div>
+                </div>
+
+                {/* CATEGORY STRIP */}
+                <div
+                    ref={categoryScrollRef}
+                    className="flex gap-10 overflow-x-auto scrollbar-hide scroll-smooth py-2"
+                >
+                    {category.map((cate, index) => (
+                        <CategoryCard key={index} data={cate} />
+                    ))}
+                </div>
+            </div>
         </div>
     );
 };

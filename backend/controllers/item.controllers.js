@@ -138,3 +138,21 @@ export const deleteItem = async (req, res) => {
             .json({ message: "Server Error: deleteItem", error });
     }
 };
+
+export const getItemsByCity = async (req, res) => {
+    try {
+        const { city } = req.params;
+        const shops = await Shop.find({
+            city: { $regex: new RegExp(`${city}$`, "i") },
+        });
+
+        const shopIds = shops.map((shop) => shop._id);
+        const items = await Item.find({ shop: { $in: shopIds } });
+
+        res.status(200).json(items);
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: "Server Error: getItemsByCity", error });
+    }
+};
