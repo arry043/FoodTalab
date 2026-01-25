@@ -23,6 +23,11 @@ const Navbar = () => {
     const dispatch = useDispatch();
 
     const handleLogout = async () => {
+        const isConfirm = window.confirm("Are you sure you want to logout?");
+        if(!isConfirm){
+            setShowInfo((prev) => !prev)
+            return
+        }
         try {
             await axios.get(`${serverUrl}/api/auth/signout`, {
                 withCredentials: true,

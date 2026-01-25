@@ -6,10 +6,6 @@ import { sendOtp } from "../utils/mail.js";
 export const signUp = async (req, res) => {
     try {
         const { fullName, email, password, mobile, role } = req.body;
-        let user = await User.findOne({ email });
-        if (user) {
-            return res.status(400).json({ message: "User already exists" });
-        }
 
         if (!fullName) {
             return res.status(400).json({ message: "Full name is required" });
@@ -35,6 +31,21 @@ export const signUp = async (req, res) => {
                 .status(400)
                 .json({ message: "Mobile number must be at least 10 digits" });
         }
+        let userByEmail = await User.findOne({ email });
+        if (userByEmail) {
+            return res
+                .status(400)
+                .json({ message: "Email already registered" });
+        }
+
+        let userByMobile = await User.findOne({ mobile });
+        if (userByMobile) {
+            return res
+                .status(400)
+                .json({ message: "Mobile number already registered" });
+        }
+
+        let user = await User.findOne({ email }); 
 
         const hashedPassword = await bcrypt.hash(password, 10);
         user = await User.create({
@@ -57,6 +68,7 @@ export const signUp = async (req, res) => {
             .status(201)
             .json({ data: user, message: "User created successfully" });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ message: "Server Error: signUp", error });
     }
 };
