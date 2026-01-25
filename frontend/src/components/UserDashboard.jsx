@@ -13,7 +13,7 @@ const UserDashboard = () => {
         (state) => state.user,
     );
     // console.log(userData);
-    console.log("Shops: ", shopsInMyCity);
+    // console.log("Shops: ", shopsInMyCity);
 
     // SCROLL REFS
     const categoryScrollRef = useRef(null);

@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 const Navbar = () => {
     const { userData, city } = useSelector((state) => state?.user);
     const { myShopData } = useSelector((state) => state?.owner);
-    console.log("myShopData: ",myShopData);
+    // console.log("myShopData: ",myShopData);
     const actualUserData = userData?.data;
     const role = actualUserData?.role;
 

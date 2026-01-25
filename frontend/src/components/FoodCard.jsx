@@ -1,19 +1,32 @@
 import React, { useState } from "react";
 import { FaDrumstickBite, FaLeaf, FaStar } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart, removeFromCart } from "../redux/userSlice";
 
 function FoodCard({ data }) {
-    const [quantity, setQuantity] = useState(0);
+    const dispatch = useDispatch();
 
-    const handleIncreseQuantity = () => {
-        const newQuantity = quantity + 1;
-        setQuantity(newQuantity);
+    const cartItems = useSelector((state) => state.user.cartItems);
+    // console.log("Cart Items:",cartItems);
+
+    const cartItem = cartItems.find((i) => i.id === data._id);
+    const quantity = cartItem?.quantity || 0;
+
+    const handleIncrease = () => {
+        dispatch(
+            addToCart({
+                id: data._id,
+                name: data.name,
+                price: data.price,
+                image: data.image,
+                shop: data.shop,
+                foodType: data.foodType,
+            }),
+        );
     };
-    const handleDecreseQuantity = () => {
-        if(quantity === 0) {
-            return;
-        }
-        const newQuantity = quantity - 1;
-        setQuantity(newQuantity);
+
+    const handleDecrease = () => {
+        dispatch(removeFromCart(data._id));
     };
 
     const renderStars = (rating) => {
@@ -99,21 +112,19 @@ function FoodCard({ data }) {
                     <div className="h-[36px] flex items-center">
                         {quantity === 0 ? (
                             <button
-                                onClick={handleIncreseQuantity}
-                                className="h-full px-4 text-sm font-semibold rounded-full
-                border border-[#ff4d2d] text-[#ff4d2d] cursor-pointer
-                hover:bg-[#ff4d2d] hover:text-white transition"
+                                onClick={handleIncrease}
+                                className="h-full px-4 text-sm font-semibold rounded-full border border-[#ff4d2d] text-[#ff4d2d] hover:bg-[#ff4d2d] hover:text-white transition"
                             >
                                 ADD
                             </button>
                         ) : (
                             <div
                                 className="h-full flex items-center gap-3 px-3
-                border border-[#ff4d2d] rounded-full
-                text-[#ff4d2d] font-semibold"
+            border border-[#ff4d2d] rounded-full
+            text-[#ff4d2d] font-semibold"
                             >
                                 <button
-                                    onClick={handleDecreseQuantity}
+                                    onClick={handleDecrease}
                                     className="text-lg leading-none cursor-pointer"
                                 >
                                     −
@@ -122,7 +133,7 @@ function FoodCard({ data }) {
                                 <span className="text-sm">{quantity}</span>
 
                                 <button
-                                    onClick={handleIncreseQuantity}
+                                    onClick={handleIncrease}
                                     className="text-lg leading-none cursor-pointer"
                                 >
                                     +

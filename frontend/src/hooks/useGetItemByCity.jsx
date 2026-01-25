@@ -19,7 +19,7 @@ function useGetItemByCity() {
                     { withCredentials: true },
                 );
 
-                console.log("items in city:", result.data);
+                // console.log("items in city:", result.data);
 
                 // ✅ correct dispatch
                 dispatch(setItemsInMyCity(result?.data?.data));
