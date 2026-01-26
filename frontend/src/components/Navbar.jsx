@@ -9,10 +9,10 @@ import { setUserData } from "../redux/userSlice";
 import { serverUrl } from "../App";
 import { FaPlus } from "react-icons/fa";
 import { LuReceipt } from "react-icons/lu";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
-    const { userData, city } = useSelector((state) => state?.user);
+    const { userData, city, cartItems } = useSelector((state) => state?.user);
     const { myShopData } = useSelector((state) => state?.owner);
     // console.log("myShopData: ",myShopData);
     const actualUserData = userData?.data;
@@ -21,6 +21,7 @@ const Navbar = () => {
     const [showInfo, setShowInfo] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleLogout = async () => {
         const isConfirm = window.confirm("Are you sure you want to logout?");
@@ -98,10 +99,10 @@ const Navbar = () => {
 
                 {/* ================= USER CART ================= */}
                 {role === "user" && (
-                    <div className="relative cursor-pointer">
+                    <div className="relative cursor-pointer" onClick={()=> navigate("/cart")}>
                         <IoMdCart size={25} className="text-[#ff4d2d]" />
                         <span className="absolute text-sm text-[#ff4d2d] left-3 bottom-4.5">
-                            0
+                            {cartItems?.length ? cartItems?.length : ""}
                         </span>
                     </div>
                 )}

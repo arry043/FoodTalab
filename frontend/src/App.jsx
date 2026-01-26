@@ -12,6 +12,7 @@ import AddItem from "./pages/AddItem";
 import EditItem from "./pages/EditItem";
 import useGetShopByCity from "./hooks/useGetShopByCity";
 import useGetItemByCity from "./hooks/useGetItemByCity";
+import CartPage from "./pages/CartPage";
 
 export const serverUrl = "http://localhost:8000";
 
@@ -34,6 +35,7 @@ function App() {
             <Route path="/create-edit-shop" element={ !userData ? <Navigate to="/signin" /> : <CreateEditShop />} />
             <Route path="/add-item" element={ !userData ? <Navigate to="/signin" /> : <AddItem />} />
             <Route path="/edit-item/:itemId" element={ !userData ? <Navigate to="/signin" /> : <EditItem />} />
+            <Route path="/cart" element={ !userData ? <Navigate to="/signin" /> : <CartPage />} />
         </Routes>
     );
 }
