@@ -162,7 +162,7 @@ function CartPage() {
                             </div>
 
                             {/* ✅ CHECKOUT */}
-                            <button className="w-full mt-6 bg-[#ff4d2d] text-white py-3 rounded-xl font-semibold text-lg hover:bg-[#e64528] transition">
+                            <button onClick={()=> navigate("/checkout")} className="w-full mt-6 bg-[#ff4d2d] text-white py-3 rounded-xl font-semibold text-lg hover:bg-[#e64528] transition">
                                 Proceed to Checkout
                             </button>
                         </>
