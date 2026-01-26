@@ -77,7 +77,7 @@ function CheckOutPage() {
                     text,
                 )}&format=json&apiKey=${import.meta.env.VITE_GEO_LOCATION_API_KEY}`,
             );
-
+            console.log("Suggestions: ", result );
             setSuggestions(result.data?.results || []);
             setShowSuggestions(true);
         } catch (error) {
@@ -331,7 +331,7 @@ function CheckOutPage() {
                             <FaMoneyBillWave className="text-green-600" />
                             <span className="text-sm font-medium">
                                 Cash on Delivery
-                            </span>
+                            </span> 
                         </label>
 
                         {/* ONLINE */}
@@ -352,7 +352,7 @@ function CheckOutPage() {
                             />
                             <FaCreditCard className="text-blue-600" />
                             <span className="text-sm font-medium">
-                                Online Payment
+                                UPI / Creadit / Debit Card
                             </span>
                         </label>
                     </div>

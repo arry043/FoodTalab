@@ -1,16 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { TbTrashXFilled } from "react-icons/tb";
 import Navbar from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { MdOutlineAddShoppingCart } from "react-icons/md";
-import { addToCart, removeFromCart, removeItemCompletelyFromCart } from "../redux/userSlice";
+import {
+    addToCart,
+    removeFromCart,
+    removeItemCompletelyFromCart,
+    setDelivaryFee,
+} from "../redux/userSlice";
 
 function CartPage() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { cartItems, totalAmount, delivaryFee } = useSelector((state) => state.user);
+    const { cartItems, totalAmount, delivaryFee } = useSelector(
+        (state) => state.user,
+    );
+
+    
 
     return (
         <div className="min-h-screen bg-[#fff9f6]">
@@ -75,7 +84,8 @@ function CartPage() {
                                             <p className="text-[#ff4d2d] text-xl font-bold mt-1 flex flex-row items-baseline gap-2">
                                                 ₹{item.price * item.quantity}
                                                 <span className="text-[11px] text-gray-500">
-                                                    ({item.price} x {item.quantity})
+                                                    ({item.price} x{" "}
+                                                    {item.quantity})
                                                 </span>
                                             </p>
                                         </div>
@@ -127,7 +137,9 @@ function CartPage() {
                                                     i++
                                                 ) {
                                                     dispatch(
-                                                        removeItemCompletelyFromCart(item.id),
+                                                        removeItemCompletelyFromCart(
+                                                            item.id,
+                                                        ),
                                                     );
                                                 }
                                             }}
@@ -162,7 +174,10 @@ function CartPage() {
                             </div>
 
                             {/* ✅ CHECKOUT */}
-                            <button onClick={()=> navigate("/checkout")} className="w-full mt-6 bg-[#ff4d2d] text-white py-3 rounded-xl font-semibold text-lg hover:bg-[#e64528] transition">
+                            <button
+                                onClick={() => navigate("/checkout")}
+                                className="w-full mt-6 bg-[#ff4d2d] text-white py-3 rounded-xl font-semibold text-lg hover:bg-[#e64528] transition"
+                            >
                                 Proceed to Checkout
                             </button>
                         </>

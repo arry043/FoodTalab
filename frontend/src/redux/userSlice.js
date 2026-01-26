@@ -38,9 +38,7 @@ const userSlice = createSlice({
         },
         addToCart: (state, action) => {
             const item = action.payload;
-
             const existing = state.cartItems.find((i) => i.id === item.id);
-
             if (existing) {
                 existing.quantity += 1;
             } else {
@@ -50,6 +48,11 @@ const userSlice = createSlice({
                 (sum, item) => sum + item.price * item.quantity,
                 0,
             );
+            if(state.totalAmount > 500){
+                state.delivaryFee = 0
+            }else{
+                state.delivaryFee = 49
+            }
         },
 
         removeFromCart: (state, action) => {
@@ -70,6 +73,11 @@ const userSlice = createSlice({
                 (sum, item) => sum + item.price * item.quantity,
                 0,
             );
+            if(state.totalAmount > 500){
+                state.delivaryFee = 0
+            }else{
+                state.delivaryFee = 49
+            }
         },
         removeItemCompletelyFromCart: (state, action) => {
             const id = action.payload;
@@ -89,5 +97,6 @@ export const {
     addToCart,
     removeFromCart,
     removeItemCompletelyFromCart,
+    setDelivaryFee
 } = userSlice.actions;
 export default userSlice.reducer;
