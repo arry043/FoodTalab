@@ -34,6 +34,9 @@ function CheckOutPage() {
 
     const [paymentMethod, setPaymentMethod] = useState("COD");
     const [addressInput, setAddressInput] = useState("");
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [loadingSuggest, setLoadingSuggest] = useState(false);
 
     const onDragEnd = (e) => {
         const { lat, lng } = e.target.getLatLng();
@@ -60,22 +63,33 @@ function CheckOutPage() {
         }
     };
 
-    const getLatLngByAddress = async (addressInput) => {
+    const fetchSuggestions = async (text) => {
+        if (!text || text.length < 3) {
+            setSuggestions([]);
+            return;
+        }
+
         try {
+            setLoadingSuggest(true);
+
             const result = await axios.get(
-                `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(addressInput)}&format=json&apiKey=${import.meta.env.VITE_GEO_LOCATION_API_KEY}`,
+                `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+                    text,
+                )}&format=json&apiKey=${import.meta.env.VITE_GEO_LOCATION_API_KEY}`,
             );
-            console.log("result: ", result);
+
+            setSuggestions(result.data?.results || []);
+            setShowSuggestions(true);
         } catch (error) {
-            console.log("fetch location error checkout: ", error);
+            console.log("autocomplete error:", error);
+        } finally {
+            setLoadingSuggest(false);
         }
     };
 
-    console.log(getLatLngByAddress(addressInput));
-
     useEffect(() => {
         setAddressInput(mapAddress);
-    },[mapAddress])
+    }, [mapAddress]);
 
     const getCurrentLocation = async () => {
         try {
@@ -145,7 +159,15 @@ function CheckOutPage() {
                             <FaSearch className="text-gray-400 text-sm mr-2" />
                             <input
                                 value={addressInput}
-                                onChange={(e)=>setAddressInput(e.target.value)}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setAddressInput(value);
+                                    fetchSuggestions(value);
+                                }}
+                                onFocus={() =>
+                                    suggestions.length &&
+                                    setShowSuggestions(true)
+                                }
                                 placeholder="Search for area, street, landmark..."
                                 className="w-full outline-none text-sm bg-transparent"
                             />
@@ -160,36 +182,63 @@ function CheckOutPage() {
                         </button>
                     </div>
 
+                    {loadingSuggest && (
+                        <p className="text-xs text-gray-400 mt-1">
+                            Searching...
+                        </p>
+                    )}
+                    {/* 🔽 SUGGESTION DROPDOWN */}
+                    {showSuggestions && suggestions.length > 0 && (
+                        <ul
+                            className="mt-2 bg-white rounded-xl shadow-lg border border-gray-100
+    max-h-64 overflow-y-auto text-sm divide-y"
+                        >
+                            {suggestions.map((item, index) => (
+                                <li
+                                    key={index}
+                                    onClick={() => {
+                                        setAddressInput(item.formatted);
+                                        setShowSuggestions(false);
+                                        setSuggestions([]);
+
+                                        dispatch(
+                                            setLocation({
+                                                lat: item.lat,
+                                                lng: item.lon,
+                                            }),
+                                        );
+
+                                        dispatch(setMapAddress(item.formatted));
+                                    }}
+                                    className="flex gap-3 px-4 py-3 cursor-pointer
+            hover:bg-orange-50 transition-all"
+                                >
+                                    {/* 📍 ICON */}
+                                    <div className="mt-1 text-[#ff4d2d]">
+                                        <MdLocationPin size={18} />
+                                    </div>
+
+                                    {/* TEXT */}
+                                    <div className="flex flex-col">
+                                        <span className="font-medium text-gray-800 line-clamp-1">
+                                            {item.address_line1 || item.name}
+                                        </span>
+
+                                        <span className="text-xs text-gray-500 line-clamp-1">
+                                            {item.address_line2 ||
+                                                item.formatted}
+                                        </span>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+
                     {/* INFO TEXT */}
                     <p className="text-xs text-gray-500 mt-2">
                         Use current location or search manually
                     </p>
                 </div>
-
-                {/* MAP PREVIEW */}
-                {/* {location && (
-                    <div className="mt-4 rounded-lg overflow-hidden border">
-                        {location.lat ? (
-                            <iframe
-                                title="map"
-                                width="100%"
-                                height="220"
-                                loading="lazy"
-                                className="border-0"
-                                src={`https://maps.google.com/maps?q=${location.lat},${location.lng}&z=15&output=embed`}
-                            />
-                        ) : (
-                            <iframe
-                                title="map"
-                                width="100%"
-                                height="220"
-                                loading="lazy"
-                                className="border-0"
-                                // src={`https://maps.google.com/maps?q=${mapAddress.lat},${mapAddress.lng}&z=15&output=embed`}
-                            />
-                        )}
-                    </div>
-                )} */}
 
                 {/* 🗺️ MAP PREVIEW */}
                 <div className="bg-white rounded-2xl shadow-md p-3 mb-6">
@@ -221,14 +270,6 @@ function CheckOutPage() {
                                 </Marker>
                             </MapContainer>
                         </div>
-
-                        {/* CENTER PIN OVERLAY (for style) */}
-                        {/* <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                            <MdLocationPin
-                                className="text-blue-500"
-                                size={35}
-                            />
-                        </div> */}
                     </div>
 
                     {/* INFO BAR */}
