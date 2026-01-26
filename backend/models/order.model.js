@@ -6,6 +6,10 @@ const shopOrderItemsSchema = new mongoose.Schema({
         ref: "Item",
         required: true,
     },
+    name: {
+        type: String,
+        required: true,
+    },
     price: {
         type: Number,
         required: true,
@@ -13,7 +17,7 @@ const shopOrderItemsSchema = new mongoose.Schema({
     quantity: {
         type: Number,
         required: true,
-    },
+    }, 
 });
 
 const shopOrderSchema = new mongoose.Schema({
@@ -59,7 +63,11 @@ const orderSchema = new mongoose.Schema({
         type:Number,
         required: true
     },
-    shopOrder: [shopOrderSchema]
+    delivaryFee: {
+        type: Number,
+        required: true,
+    },
+    shopOrders: [shopOrderSchema]
 },{timestamps:true});
 
 const Order = mongoose.model("Order", orderSchema);

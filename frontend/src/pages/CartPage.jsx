@@ -19,8 +19,6 @@ function CartPage() {
         (state) => state.user,
     );
 
-    
-
     return (
         <div className="min-h-screen bg-[#fff9f6]">
             <Navbar />
@@ -81,7 +79,7 @@ function CartPage() {
                                                 {item.foodType}
                                             </p>
 
-                                            <p className="text-[#ff4d2d] text-xl font-bold mt-1 flex flex-row items-baseline gap-2">
+                                            <p className="text-[#ff4d2d] text-xl font-bold mt-1 flex flex-col md:flex-row items-baseline gap-2">
                                                 ₹{item.price * item.quantity}
                                                 <span className="text-[11px] text-gray-500">
                                                     ({item.price} x{" "}
@@ -154,6 +152,10 @@ function CartPage() {
                                     </div>
                                 ))}
                             </div>
+                            <div className="text-gray-500 mt-2 text-sm">
+                                Add foods worth more than ₹499 to get free
+                                delivery
+                            </div>
 
                             {/* 💰 BILL SUMMARY */}
                             <div className="bg-white rounded-xl shadow mt-6 p-5 space-y-3">
@@ -164,7 +166,20 @@ function CartPage() {
 
                                 <div className="flex justify-between text-gray-600">
                                     <span>Delivery Fee</span>
-                                    <span>₹{delivaryFee}</span>
+                                    <span className="flex items-center gap-2">
+                                        {delivaryFee === 0 ? (
+                                            <>
+                                                <span className="line-through text-gray-400">
+                                                    ₹49
+                                                </span>
+                                                <span className="text-green-600 font-semibold">
+                                                    Free
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <span>₹{delivaryFee}</span>
+                                        )}
+                                    </span>
                                 </div>
 
                                 <div className="border-t pt-3 flex justify-between font-bold text-lg">

@@ -23,9 +23,10 @@ function App() {
     useGetCity();
     const {userData} = useSelector((state) => state.user);
     // console.log(userData);
-    if(userData?.data?.role === "owner"){
-        useGetMyShop();
-    }
+    // if(userData?.data?.role === "owner"){
+    //     useGetMyShop();
+    // }
+    useGetMyShop();
     useGetShopByCity();
     useGetItemByCity();
 

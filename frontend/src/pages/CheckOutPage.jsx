@@ -364,7 +364,7 @@ function CheckOutPage() {
                     font-semibold text-lg hover:bg-[#e64528] transition"
                     onClick={() => alert(`Order placed with ${paymentMethod}`)}
                 >
-                    Place Order
+                    {paymentMethod === "COD" ? "Place Order" : "Pay Now"}
                 </button>
             </div>
         </div>
