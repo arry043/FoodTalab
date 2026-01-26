@@ -3,17 +3,104 @@ import { FaSearch } from "react-icons/fa";
 import { MdLocationPin } from "react-icons/md";
 import { MdOutlineMyLocation } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import { FaMoneyBillWave, FaCreditCard } from "react-icons/fa";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { CustomPinLocationMarker } from "../components/CustomPinLocationMarker";
+import { setLocation, setMapAddress } from "../redux/mapSlice";
+import axios from "axios";
+
+function RecenterMap({ location }) {
+    if (location.lat && location.lng) {
+        const map = useMap();
+        map.setView([location.lat, location.lng], 16, {
+            animate: true,
+            duration: 1,
+        });
+    }
+    return null;
+}
 
 function CheckOutPage() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const { cartItems, totalAmount, delivaryFee, address, city } = useSelector(
         (state) => state.user,
     );
+    const { location, mapAddress } = useSelector((state) => state.map);
+    // console.log("location:  and map add", location, mapAddress);
 
     const [paymentMethod, setPaymentMethod] = useState("COD");
+    const [addressInput, setAddressInput] = useState("");
+
+    const onDragEnd = (e) => {
+        const { lat, lng } = e.target.getLatLng();
+        // console.log(lat, lng);
+        dispatch(
+            setLocation({
+                lat: lat,
+                lng: lng,
+            }),
+        );
+        getAddressByLatLng(lat, lng);
+    };
+
+    const getAddressByLatLng = async (lat, lng) => {
+        try {
+            const result = await axios.get(
+                `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&format=json&apiKey=${import.meta.env.VITE_GEO_LOCATION_API_KEY}`,
+            );
+            const formattedAddress = result?.data?.results[0]?.formatted;
+            // console.log(formattedAddress);
+            dispatch(setMapAddress(formattedAddress));
+        } catch (error) {
+            console.log("fetch location error checkout: ", error);
+        }
+    };
+
+    const getLatLngByAddress = async (addressInput) => {
+        try {
+            const result = await axios.get(
+                `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(addressInput)}&format=json&apiKey=${import.meta.env.VITE_GEO_LOCATION_API_KEY}`,
+            );
+            console.log("result: ", result);
+        } catch (error) {
+            console.log("fetch location error checkout: ", error);
+        }
+    };
+
+    console.log(getLatLngByAddress(addressInput));
+
+    useEffect(() => {
+        setAddressInput(mapAddress);
+    },[mapAddress])
+
+    const getCurrentLocation = async () => {
+        try {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                // console.log(position);
+                const lattitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                dispatch(setLocation({ lat: lattitude, lng: longitude }));
+                // console.log(`lattitude: ${lattitude} longitude: ${longitude}`);
+
+                try {
+                    const location = await axios.get(
+                        `https://api.geoapify.com/v1/geocode/reverse?lat=${lattitude}&lon=${longitude}&format=json&apiKey=${import.meta.env.VITE_GEO_LOCATION_API_KEY}`,
+                    );
+                    const formatted = location?.data?.results[0]?.formatted;
+                    dispatch(setLocation({ lat: lattitude, lng: longitude }));
+                    dispatch(setMapAddress(formatted));
+                } catch (error) {
+                    console.log("fetch location error: ", error);
+                }
+            });
+        } catch (error) {
+            console.log("fetch location error: ", error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[#fff9f6] flex justify-center px-4 pb-24">
@@ -57,6 +144,8 @@ function CheckOutPage() {
                         <div className="flex items-center flex-1 border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-orange-400">
                             <FaSearch className="text-gray-400 text-sm mr-2" />
                             <input
+                                value={addressInput}
+                                onChange={(e)=>setAddressInput(e.target.value)}
                                 placeholder="Search for area, street, landmark..."
                                 className="w-full outline-none text-sm bg-transparent"
                             />
@@ -64,8 +153,8 @@ function CheckOutPage() {
 
                         {/* CURRENT LOCATION BTN */}
                         <button
-                            className="flex items-center justify-center gap-1 bg-blue-500 text-white
-            px-3 py-2 rounded-lg hover:bg-blue-600 transition text-sm"
+                            onClick={getCurrentLocation}
+                            className="flex items-center justify-center gap-1 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition text-sm"
                         >
                             <MdOutlineMyLocation size={18} />
                         </button>
@@ -75,7 +164,81 @@ function CheckOutPage() {
                     <p className="text-xs text-gray-500 mt-2">
                         Use current location or search manually
                     </p>
-                </div>  
+                </div>
+
+                {/* MAP PREVIEW */}
+                {/* {location && (
+                    <div className="mt-4 rounded-lg overflow-hidden border">
+                        {location.lat ? (
+                            <iframe
+                                title="map"
+                                width="100%"
+                                height="220"
+                                loading="lazy"
+                                className="border-0"
+                                src={`https://maps.google.com/maps?q=${location.lat},${location.lng}&z=15&output=embed`}
+                            />
+                        ) : (
+                            <iframe
+                                title="map"
+                                width="100%"
+                                height="220"
+                                loading="lazy"
+                                className="border-0"
+                                // src={`https://maps.google.com/maps?q=${mapAddress.lat},${mapAddress.lng}&z=15&output=embed`}
+                            />
+                        )}
+                    </div>
+                )} */}
+
+                {/* 🗺️ MAP PREVIEW */}
+                <div className="bg-white rounded-2xl shadow-md p-3 mb-6">
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                        📍 Pin your exact location
+                    </h3>
+
+                    <div className="relative rounded-xl overflow-hidden border border-gray-200">
+                        {/* MAP */}
+                        <div className="h-[260px] w-full">
+                            <MapContainer
+                                center={[location.lat, location.lng]}
+                                zoom={15}
+                                scrollWheelZoom={false}
+                                className="w-full h-full z-0"
+                            >
+                                <TileLayer
+                                    attribution="&copy; OpenStreetMap contributors"
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                />
+                                <RecenterMap location={location} />
+                                <Marker
+                                    position={[location.lat, location.lng]}
+                                    draggable
+                                    icon={CustomPinLocationMarker}
+                                    eventHandlers={{ dragend: onDragEnd }}
+                                >
+                                    <Popup>Your delivery location</Popup>
+                                </Marker>
+                            </MapContainer>
+                        </div>
+
+                        {/* CENTER PIN OVERLAY (for style) */}
+                        {/* <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                            <MdLocationPin
+                                className="text-blue-500"
+                                size={35}
+                            />
+                        </div> */}
+                    </div>
+
+                    {/* INFO BAR */}
+                    <div className="mt-3 flex items-center justify-between text-sm text-gray-600">
+                        <span>Move map to adjust location</span>
+                        <span className="text-[#ff4d2d] font-medium cursor-pointer">
+                            Change
+                        </span>
+                    </div>
+                </div>
 
                 {/* 🧾 ORDER SUMMARY */}
                 <div className="bg-white rounded-xl shadow p-4 mb-5">

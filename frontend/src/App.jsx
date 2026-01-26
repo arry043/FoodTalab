@@ -18,14 +18,17 @@ import CheckOutPage from "./pages/CheckOutPage";
 export const serverUrl = "http://localhost:8000";
 
 function App() {
-
+    
     useGetCurrentUser();
     useGetCity();
-    useGetMyShop();
+    const {userData} = useSelector((state) => state.user);
+    // console.log(userData);
+    if(userData?.data?.role === "owner"){
+        useGetMyShop();
+    }
     useGetShopByCity();
     useGetItemByCity();
 
-    const {userData} = useSelector((state) => state.user);
 
     return (
         <Routes>
