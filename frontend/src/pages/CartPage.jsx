@@ -12,6 +12,7 @@ import {
     setDelivaryFee,
 } from "../redux/userSlice";
 
+
 function CartPage() {
     const navigate = useNavigate();
     const dispatch = useDispatch();

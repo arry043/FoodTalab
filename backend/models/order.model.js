@@ -17,59 +17,66 @@ const shopOrderItemsSchema = new mongoose.Schema({
     quantity: {
         type: Number,
         required: true,
-    }, 
+    },
 });
 
-const shopOrderSchema = new mongoose.Schema({
-    shop: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Shop",
-        required: true,
+const shopOrderSchema = new mongoose.Schema(
+    {
+        shop: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Shop",
+            required: true,
+        },
+        owner: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        subTotal: {
+            type: Number,
+            required: true,
+        },
+        shopOrderItems: [shopOrderItemsSchema],
     },
-    owner: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-    },
-    subTotal:{
-        type: Number,
-        required: true
-    },
-    shopOrderItems: [shopOrderItemsSchema],
-},{timestamps:true});
+    { timestamps: true },
+);
 
-const orderSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-    },
-    paymentMethod: {
-        type: String,
-        enum: ["COD", "Online"],
-        required: true,
-    },
-    delivaryAddress: {
-        text: String,
-        required: true,
-        lattitude: {
-            type: Number,
+const orderSchema = new mongoose.Schema(
+    {
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
         },
-        longitude: {
-            type: Number,
+        paymentMethod: {
+            type: String,
+            enum: ["COD", "ONLINE"],
+            required: true,
         },
+        delivaryAddress: {
+            text: {
+                type: String,
+                required: true,
+            },
+            lattitude: {
+                type: Number,
+            },
+            longitude: {
+                type: Number,
+            },
+        },
+        totalAmount: {
+            type: Number,
+            required: true,
+        },
+        delivaryFee: {
+            type: Number,
+            required: true,
+        },
+        shopOrders: [shopOrderSchema],
     },
-    totalAmount: {
-        type:Number,
-        required: true
-    },
-    delivaryFee: {
-        type: Number,
-        required: true,
-    },
-    shopOrders: [shopOrderSchema]
-},{timestamps:true});
+    { timestamps: true },
+);
 
 const Order = mongoose.model("Order", orderSchema);
 export default Order;
-

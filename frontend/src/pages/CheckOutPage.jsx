@@ -11,6 +11,7 @@ import "leaflet/dist/leaflet.css";
 import { CustomPinLocationMarker } from "../components/CustomPinLocationMarker";
 import { setLocation, setMapAddress } from "../redux/mapSlice";
 import axios from "axios";
+import { serverUrl } from "../App";
 
 function RecenterMap({ location }) {
     if (location.lat && location.lng) {
@@ -77,7 +78,7 @@ function CheckOutPage() {
                     text,
                 )}&format=json&apiKey=${import.meta.env.VITE_GEO_LOCATION_API_KEY}`,
             );
-            console.log("Suggestions: ", result );
+            console.log("Suggestions: ", result);
             setSuggestions(result.data?.results || []);
             setShowSuggestions(true);
         } catch (error) {
@@ -90,6 +91,32 @@ function CheckOutPage() {
     useEffect(() => {
         setAddressInput(mapAddress);
     }, [mapAddress]);
+
+    const handlePlaceOrder = async () => {
+        try {
+            const result = await axios.post(
+                `${serverUrl}/api/order/place-order`,
+                {
+                    paymentMethod,
+                    delivaryAddress: {
+                        text: addressInput,
+                        lattitude: location.lat,
+                        longitude: location.lng,
+                    },
+                    totalAmount,
+                    delivaryFee,
+                    cartItems,
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+            console.log("order placed: ", result.data);
+            navigate("/order-placed")
+        } catch (error) {
+            console.log("place order error: ", error);
+        }
+    };
 
     const getCurrentLocation = async () => {
         try {
@@ -331,7 +358,7 @@ function CheckOutPage() {
                             <FaMoneyBillWave className="text-green-600" />
                             <span className="text-sm font-medium">
                                 Cash on Delivery
-                            </span> 
+                            </span>
                         </label>
 
                         {/* ONLINE */}
@@ -362,7 +389,7 @@ function CheckOutPage() {
                 <button
                     className="w-full bg-[#ff4d2d] text-white py-3 rounded-xl
                     font-semibold text-lg hover:bg-[#e64528] transition"
-                    onClick={() => alert(`Order placed with ${paymentMethod}`)}
+                    onClick={handlePlaceOrder}
                 >
                     {paymentMethod === "COD" ? "Place Order" : "Pay Now"}
                 </button>
