@@ -112,7 +112,7 @@ function CheckOutPage() {
                 },
             );
             console.log("order placed: ", result.data);
-            navigate("/order-placed")
+            navigate("/order-placed");
         } catch (error) {
             console.log("place order error: ", error);
         }

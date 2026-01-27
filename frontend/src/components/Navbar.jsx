@@ -45,7 +45,7 @@ const Navbar = () => {
         <div
             className={`w-full h-15 md:h-17 flex items-center justify-between md:justify-center gap-10 px-[20px] fixed top-0 z-[9999] bg-[#fff9f6] overflow-visible`}
         >
-            <h1 className="text-3xl font-bold mb-2 text-[#ff4d2d]">
+            <h1 onClick={() => navigate("/")} className="text-3xl cursor-pointer font-bold mb-2 text-[#ff4d2d]">
                 FoodTalab
             </h1>
 
@@ -109,15 +109,15 @@ const Navbar = () => {
 
                 {/* ================= USER ORDERS BUTTON ================= */}
                 {role === "user" && (
-                    <button className="cursor-pointer hover:bg-[#ff4d2d]/5 hidden md:block px-3 py-1 rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium">
+                    <button onClick={()=> navigate("/my-orders")} className="cursor-pointer hover:bg-[#ff4d2d]/5 hidden md:block px-3 py-1 rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium">
                         Orders
-                    </button>
+                    </button> 
                 )}
 
                 {/* ================= OWNER ORDERS PENDING BUTTON ================= */}
                 {role === "owner" && (
                     <div className="relative">
-                        <button className="cursor-pointer flex items-center w-10 h-10 md:w-auto md:h-auto hover:bg-[#ff4d2d]/5 px-3 py-1 rounded-full md:rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium">
+                        <button onClick={()=> navigate("/my-orders")} className="cursor-pointer flex items-center w-10 h-10 md:w-auto md:h-auto hover:bg-[#ff4d2d]/5 px-3 py-1 rounded-full md:rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium">
                             <LuReceipt size={20} />
                             <span className="ml-2 hidden md:inline">
                                 Orders
@@ -143,7 +143,7 @@ const Navbar = () => {
                         <div className="text-sm font-semibold">
                             Hey.. {actualUserData.fullName}
                         </div>
-                        <div className="md:hidden font-semibold text-sm cursor-pointer hover:text-[#ff4d2d]">
+                        <div onClick={()=> navigate("/my-orders")} className="md:hidden font-semibold text-sm cursor-pointer hover:text-[#ff4d2d]">
                             My Orders
                         </div>
                         <div

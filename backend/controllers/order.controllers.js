@@ -1,5 +1,6 @@
 import Order from "../models/order.model.js";
 import Shop from "../models/shop.model.js";
+import User from "../models/user.model.js";
 
 export const placeOrder = async (req, res) => {
     // console.log("REQ USER:", req.user);
@@ -78,32 +79,41 @@ export const placeOrder = async (req, res) => {
     }
 };
 
-export const getUserOrders = async (req, res) => {
+export const getMyOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ user: req.user?.userId })
-            .sort({ createdAt: -1 })
-            .populate(
-                "shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
-            );
-        res.status(200).json({ data: orders, message: "User Orders Fetched" });
-    } catch (error) {
-        return res
-            .status(500)
-            .json({ message: "Server Error: getUserOrders", error });
-    }
-};
+        const userId = req.user?.userId;
+        const user = await User.findById(userId);
+        const role = user?.role;
 
-export const getOwnerOrders = async (req, res) => {
-    try {
-        const orders = await Order.find({ "shopOrders.owner": req.user?.userId })
+        let ordersQuery;
+        let populateFields;
+
+        if (role === "user") {
+            ordersQuery = { user: userId };
+            populateFields =
+                "shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item";
+        } 
+        else if (role === "owner") {
+            ordersQuery = { "shopOrders.owner": userId };
+            populateFields =
+                "user shopOrders.shop shopOrders.shopOrderItems.item";
+        } 
+        else {
+            return res.status(403).json({ message: "Invalid role" });
+        }
+
+        const orders = await Order.find(ordersQuery)
             .sort({ createdAt: -1 })
-            .populate(
-                "user shopOrders.shop shopOrders.shopOrderItems.item",
-            );
-        res.status(200).json({ data: orders, message: "Owner Orders Fetched" });
+            .populate(populateFields);
+
+        res.status(200).json({
+            data: orders,
+            message: "Orders Fetched Successfully",
+        });
     } catch (error) {
-        return res
-            .status(500)
-            .json({ message: "Server Error: getOwnerOrders", error });
+        return res.status(500).json({
+            message: "Server Error: getOrdersByRole",
+            error,
+        });
     }
 };

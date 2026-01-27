@@ -16,6 +16,7 @@ import CartPage from "./pages/CartPage";
 import CheckOutPage from "./pages/CheckOutPage";
 import OrderPlaced from "./pages/OrderPlaced";
 import MyOrders from "./pages/MyOrders";
+import useGetMyOrders from "./hooks/useGetMyOrders";
 
 export const serverUrl = "http://localhost:8000";
 
@@ -31,6 +32,7 @@ function App() {
     useGetMyShop();
     useGetShopByCity();
     useGetItemByCity();
+    useGetMyOrders();
 
 
     return (
