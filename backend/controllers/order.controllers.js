@@ -89,34 +89,49 @@ export const getMyOrders = async (req, res) => {
         const user = await User.findById(userId);
         const role = user?.role;
 
-        let ordersQuery;
-        let populateFields;
+        let orders;
 
         if (role === "user") {
-            ordersQuery = { user: userId };
-            populateFields =
-                "shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item";
+            orders = await Order.find({ user: userId })
+                .sort({ createdAt: -1 })
+                .populate("shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item");
         } 
         else if (role === "owner") {
-            ordersQuery = { "shopOrders.owner": userId };
-            populateFields =
-                "user shopOrders.shop shopOrders.shopOrderItems.item";
+
+            // ✅ get owner's shop
+            const ownerShop = await Shop.findOne({ owner: userId });
+            if (!ownerShop) {
+                return res.status(404).json({ message: "Shop not found for this owner" });
+            }
+
+            const allOrders = await Order.find({ "shopOrders.shop": ownerShop._id })
+                .sort({ createdAt: -1 })
+                .populate("user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item");
+
+            // ✅ FILTER shopOrders by SHOP ID (not owner)
+            orders = allOrders.map((order) => {
+                const filteredShopOrders = order.shopOrders.filter(
+                    (so) => so.shop?._id?.toString() === ownerShop._id.toString()
+                );
+
+                return {
+                    ...order.toObject(),
+                    shopOrders: filteredShopOrders,
+                };
+            });
         } 
         else {
             return res.status(403).json({ message: "Invalid role" });
         }
 
-        const orders = await Order.find(ordersQuery)
-            .sort({ createdAt: -1 })
-            .populate(populateFields);
-
         res.status(200).json({
             data: orders,
             message: "Orders Fetched Successfully",
         });
+
     } catch (error) {
         return res.status(500).json({
-            message: "Server Error: getOrdersByRole",
+            message: "Server Error: getMyOrders",
             error,
         });
     }
