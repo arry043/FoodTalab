@@ -41,11 +41,11 @@ const OwnerDashboard = () => {
 
             {myShopData && (
                 <div className=" w-full flex flex-col items-center gap-6 px-4 sm:px-6 mt-10">
-                    <h1 className="text-3xl sm:text-3xl font-bold text-gray-800 flex items-center gap-3 mt-8 text-center">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 flex items-center gap-3 mt-8 text-center">
                         <GiForkKnifeSpoon className=" ■ text-[#ff4d2d] w-14 h-14 " />
                         Welcome to {myShopData.name}
                     </h1>
-                    <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-orange-100 hover:shadow-2xl transition-all duration-300 w-full max-w-3xl relative">
+                    <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-or ange-100 hover:shadow-2xl transition-all duration-300 w-full max-w-3xl relative">
                         <img
                             src={myShopData.image}
                             alt={myShopData.name}

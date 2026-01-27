@@ -61,6 +61,8 @@ export const placeOrder = async (req, res) => {
             }),
         );
 
+        const payableAmount = totalAmount + delivaryFee;
+
         const newOrder = await Order.create({
             user: req.user?.userId,
             paymentMethod: paymentMethod,
@@ -68,6 +70,8 @@ export const placeOrder = async (req, res) => {
             totalAmount: totalAmount,
             shopOrders: shopOrders,
             delivaryFee: delivaryFee,
+            payableAmount: payableAmount,
+
         });
         return res
             .status(201)
