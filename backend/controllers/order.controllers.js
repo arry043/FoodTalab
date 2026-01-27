@@ -72,7 +72,8 @@ export const placeOrder = async (req, res) => {
             delivaryFee: delivaryFee,
             payableAmount: payableAmount,
 
-        });
+        })
+        await newOrder.populate("user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item");
         return res
             .status(201)
             .json({ data: newOrder, message: "Order Placed Successfully" });
@@ -136,3 +137,12 @@ export const getMyOrders = async (req, res) => {
         });
     }
 };
+
+export const updateOrderStatus = async (req, res) => {
+    try {
+        const {orderId, shopId} = req.params;
+    } catch (error) {
+        
+    }
+    
+}

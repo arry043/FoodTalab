@@ -12,6 +12,7 @@ import { CustomPinLocationMarker } from "../components/CustomPinLocationMarker";
 import { setLocation, setMapAddress } from "../redux/mapSlice";
 import axios from "axios";
 import { serverUrl } from "../App";
+import { addMyOrders } from "../redux/userSlice";
 
 function RecenterMap({ location }) {
     if (location.lat && location.lng) {
@@ -111,6 +112,7 @@ function CheckOutPage() {
                     withCredentials: true,
                 },
             );
+            dispatch(addMyOrders(result.data.data)); 
             console.log("order placed: ", result.data);
             navigate("/order-placed");
         } catch (error) {
