@@ -89,6 +89,16 @@ const userSlice = createSlice({
         },
         addMyOrders: (state, action) => {
             state.myOrders = [action.payload, ...state.myOrders];
+        },
+        updateOrderStatus: (state, action) => {
+            const {orderId, shopId, status} = action.payload;
+            const order = state.myOrders.find((o) => o._id === orderId);
+            if(order){
+                const shopOrder = order.shopOrders.find((so) => so.shop?._id.toString() === shopId);
+                if(shopOrder){
+                    shopOrder.status = status;
+                }
+            }
         }
     },
 });
@@ -106,6 +116,7 @@ export const {
     removeItemCompletelyFromCart,
     setDelivaryFee,
     setMyOrders,
-    addMyOrders
+    addMyOrders,
+    updateOrderStatus
 } = userSlice.actions;
 export default userSlice.reducer;

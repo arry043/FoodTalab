@@ -5,8 +5,12 @@ import { FaUserCircle } from "react-icons/fa";
 import { LuMailCheck } from "react-icons/lu";
 import { serverUrl } from "../App";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { updateOrderStatus } from "../redux/userSlice";
 
 function OwnerOrderCard({ order, key }) {
+    const dispatch = useDispatch();
+
     const formatOrderTime = (dateStr) => {
         const date = new Date(dateStr);
         const now = new Date();
@@ -57,7 +61,8 @@ function OwnerOrderCard({ order, key }) {
                     withCredentials: true,
                 },
             );
-
+            const newStatus = result.data.data.shopOrders[0].status;
+            dispatch(updateOrderStatus({ orderId, shopId, status: newStatus }));
             console.log("update staus: ", result);
         } catch (error) {
             console.log("update status error: ", error);
