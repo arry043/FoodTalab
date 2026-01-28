@@ -129,10 +129,8 @@ export const getMyOrders = async (req, res) => {
                     shopOrders: filteredShopOrders,
                 };
             });
-        } else {
-            return res.status(403).json({ message: "Invalid role" });
         }
-
+        
         res.status(200).json({
             data: orders,
             message: "Orders Fetched Successfully",
@@ -262,6 +260,46 @@ export const updateOrderStatus = async (req, res) => {
         console.error("UPDATE STATUS ERROR 👉", error);
         return res.status(500).json({
             message: "Server Error: updateOrderStatus",
+            error: error.message,
+        });
+    }
+};
+
+export const getDeliveryBoyAssignment = async (req, res) => {
+    try {
+        const deliveryBoyId = req.user?.userId;
+
+        const assignments = await DelivaryAssignment.find({
+            broadcastedTo: deliveryBoyId,
+            status: "BROADCASTED",
+        })
+            .populate("order")
+            .populate("shop")
+            .populate("shopOrder");
+
+        const formattedAssignments = assignments.map((a) => {
+            const shopOrder = a.order.shopOrders.find(
+                (so) => so._id.toString() === a.shopOrder.toString()
+            );
+
+            return {
+                assignmentId: a._id,
+                orderId: a.order._id,
+                shopName: a.shop.name,
+                deliveryAddress: a.order.delivaryAddress,
+                items: shopOrder?.shopOrderItems || [],
+                subTotal: shopOrder?.subTotal || 0,
+            };
+        });
+
+        return res.status(200).json({
+            data: formattedAssignments,
+            message: "Assignment fetched successfully",
+        });
+    } catch (error) {
+        console.error("GET ASSIGNMENT ERROR 👉", error);
+        return res.status(500).json({
+            message: "Server Error: getAssignment",
             error: error.message,
         });
     }

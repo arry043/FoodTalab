@@ -1,33 +1,49 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import axios from "axios";
 import { serverUrl } from "../App";
 import { useSelector } from "react-redux";
 
 const useUpdateLocation = () => {
-    const userData = useSelector((state) => {
-        return state.user?.userData?.data;
-    });
+    const userData = useSelector((state) => state.user?.userData?.data);
+
     useEffect(() => {
+        if (!userData?._id) return;
+
         const updateLocation = async (lat, lng) => {
-            const result = await axios.post(
-                `${serverUrl}/api/user/update-location`,
-                {
-                    lat,
-                    lng,
-                },
-                {
-                    withCredentials: true,
-                },
-            );
-            console.log("updated location: ", result);
+            try {
+                await axios.post(
+                    `${serverUrl}/api/user/update-location`,
+                    { lat, lng },
+                    { withCredentials: true },
+                );
+                // console.log("Location updated");
+            } catch (err) {
+                console.log("Update location error:", err.message);
+            }
         };
-        navigator.geolocation.watchPosition(async (position) => {
-            await updateLocation(
-                position.coords.latitude,
-                position.coords.longitude,
-            );
-        });
-    }, [userData]);
+
+        const watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                updateLocation(
+                    position.coords.latitude,
+                    position.coords.longitude,
+                );
+            },
+            (error) => {
+                console.log("GPS Error:", error.message);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 5000,
+            },
+        );
+
+        // ✅ cleanup (VERY important)
+        return () => {
+            navigator.geolocation.clearWatch(watchId);
+        };
+    }, [userData?._id]);
 };
 
 export default useUpdateLocation;

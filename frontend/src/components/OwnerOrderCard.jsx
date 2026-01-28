@@ -214,6 +214,54 @@ function OwnerOrderCard({ order, key }) {
                     Cancel
                 </button>
             </div>
+
+            {/* Delivery Boys */}
+            {order?.shopOrders[0]?.status === "outForDelivery" && (
+                <div className="mt-6 bg-[#fff9f6] border border-[#ffd5c8] rounded-2xl p-4">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                        🚴 Available Delivery Partners
+                    </h3>
+
+                    {availableBoys.length > 0 ? (
+                        <div className="space-y-3">
+                            {availableBoys.map((deliveryBoy) => (
+                                <div
+                                    key={deliveryBoy.id}
+                                    className="flex items-center justify-between bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition"
+                                >
+                                    {/* Left Info */}
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-full bg-[#ffebe4] flex items-center justify-center text-[#ff4d2d] font-bold">
+                                            {deliveryBoy.fullName?.charAt(0)}
+                                        </div>
+
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {deliveryBoy.fullName}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                📞 {deliveryBoy.mobile}
+                                            </p>
+                                            <p className="text-xs text-gray-400 truncate max-w-[160px]">
+                                                {deliveryBoy.email}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Action */}
+                                    <button className="px-4 py-1.5 text-xs rounded-full bg-[#ff4d2d] text-white hover:bg-[#e64427] transition">
+                                        Assign
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-gray-500">
+                            Wait for being Assigned delivery partner...
+                        </p>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
