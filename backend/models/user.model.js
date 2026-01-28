@@ -1,41 +1,57 @@
 import mongoose from "mongoose";
 
-const userSchema = mongoose.Schema({
-    fullName: {
-        type: String,
-        required: true,
+const userSchema = mongoose.Schema(
+    {
+        fullName: {
+            type: String,
+            required: true,
+        },
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+        },
+        password: {
+            type: String,
+        },
+        mobile: {
+            type: String,
+            unique: true,
+        },
+        role: {
+            type: String,
+            enum: ["user", "owner", "deliveryBoy"],
+            default: "user",
+            required: true,
+        },
+        resetOtp: {
+            type: String,
+        },
+        isOtpVerified: {
+            type: Boolean,
+            default: false,
+        },
+        otpExpires: {
+            type: Date,
+        },
+        location: {
+            type: {
+                type: String,
+                enum: ["Point"],
+                default: "Point",
+            },
+            coordinates: {
+                type: [Number],
+                default: [0, 0],
+            },
+        },
     },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
+    {
+        timestamps: true,
     },
-    password: {
-        type: String,
-    },
-    mobile: {
-        type: String,
-        unique: true,
-    },
-    role: {
-        type: String,
-        enum: ["user", "owner", "deliveryBoy"],
-        default: "user",
-        required: true,
-    },
-    resetOtp: {
-        type: String,
-    },
-    isOtpVerified: {
-        type: Boolean,
-        default: false,
-    },
-    otpExpires: {
-        type: Date,
-    },
-}, {
-    timestamps: true,
-});
+);
+
+userSchema.index({ location: "2dsphere" });
 
 const User = mongoose.model("User", userSchema);
 export default User;

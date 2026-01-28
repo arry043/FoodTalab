@@ -1,11 +1,12 @@
 import express from "express";
 import { isAuth } from "../middlewares/isAuth.js";
-import { getCurrentUser } from "../controllers/user.controllers.js";
+import { getCurrentUser, updateUserLocation } from "../controllers/user.controllers.js";
 // const router = express.Router();
 
 const userRouter = express.Router();
 
 
-userRouter.get("/current", isAuth, getCurrentUser);
+userRouter.get("/current", isAuth, getCurrentUser); 
+userRouter.post("/update-location", isAuth, updateUserLocation); 
 
 export default userRouter;

@@ -10,6 +10,7 @@ import { updateOrderStatus } from "../redux/userSlice";
 
 function OwnerOrderCard({ order, key }) {
     const dispatch = useDispatch();
+    const [availableBoys, setAvailableBoys] = React.useState([]);
 
     const formatOrderTime = (dateStr) => {
         const date = new Date(dateStr);
@@ -63,6 +64,8 @@ function OwnerOrderCard({ order, key }) {
             );
             const newStatus = result.data.data.shopOrders[0].status;
             dispatch(updateOrderStatus({ orderId, shopId, status: newStatus }));
+            setAvailableBoys(result.data.availableDeliveryBoys);
+            console.log("boys: ", result.data);
             console.log("update staus: ", result);
         } catch (error) {
             console.log("update status error: ", error);

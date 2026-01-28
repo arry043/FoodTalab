@@ -1,3 +1,4 @@
+import DelivaryAssignment from "../models/delivaryAssignment.model.js";
 import Order from "../models/order.model.js";
 import Shop from "../models/shop.model.js";
 import User from "../models/user.model.js";
@@ -150,37 +151,118 @@ export const updateOrderStatus = async (req, res) => {
         const { status } = req.body;
 
         const order = await Order.findById(orderId);
-        if (!order) {
-            return res.status(404).json({ message: "Order not found" });
-        }
+        if (!order) return res.status(404).json({ message: "Order not found" });
 
         const shopOrder = order.shopOrders.find(
-            (so) => so.shop?.toString() === shopId
+            (so) => so.shop?.toString() === shopId,
         );
 
-        if (!shopOrder) {
+        if (!shopOrder)
             return res.status(404).json({ message: "Shop order not found" });
-        }
 
         // ✅ update status
         shopOrder.status = status;
 
+        let deliveryBoysPayload = [];
+
+        // ✅ assign delivery boys when needed
+        if (status === "outForDelivery" || !shopOrder.assignment) {
+            const { lattitude, longitude } = order.delivaryAddress;
+
+            const deliveryBoys = await User.find({
+                role: "deliveryBoy",
+                location: {
+                    $near: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [Number(longitude), Number(lattitude)],
+                        },
+                        $maxDistance: 10000,
+                    },
+                },
+            });
+
+            const nearByIds = deliveryBoys.map((db) => db._id);
+
+            const busyIds = await DelivaryAssignment.find({
+                assignTo: { $in: nearByIds },
+                status: { $nin: ["BROADCASTED", "EXPIRED"] },
+            }).distinct("assignTo");
+
+            const busySet = new Set(busyIds.map((id) => id.toString()));
+
+            const availableDeliveryBoys = deliveryBoys.filter(
+                (db) => !busySet.has(db._id.toString()),
+            );
+
+            const candidates = availableDeliveryBoys.map((b) => b._id);
+
+            if (candidates.length === 0) {
+                await order.save();
+
+                const populatedOrder = await Order.findById(orderId).populate(
+                    "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
+                );
+
+                const updatedShopOrder = populatedOrder.shopOrders.find(
+                    (so) => so.shop?._id?.toString() === shopId,
+                );
+
+                return res.status(200).json({
+                    shopOrder: updatedShopOrder,
+                    assignedDeliveryBoy: updatedShopOrder?.assignedDeliveryBoy,
+                    availableDeliveryBoys: [],
+                    asignment: updatedShopOrder?.assignment?._id,
+                    data: populatedOrder,
+                    message:
+                        "Order status updated but no delivery boy is available",
+                });
+            }
+
+            const deliveryAssignment = await DelivaryAssignment.create({
+                order: order._id,
+                shop: shopOrder.shop,
+                shopOrder: shopOrder._id,
+                broadcastedTo: candidates,
+                status: "BROADCASTED",
+            });
+
+            shopOrder.assignment = deliveryAssignment._id;
+
+            deliveryBoysPayload = availableDeliveryBoys.map((db) => ({
+                id: db._id,
+                fullName: db.fullName,
+                email: db.email,
+                longitude: db.location?.coordinates?.[0],
+                lattitude: db.location?.coordinates?.[1],
+                mobile: db.mobile,
+            }));
+        }
+
         await order.save();
 
-        // ✅ re-fetch order with full populate (same as getMyOrders)
+        // ✅ fully populated order
         const populatedOrder = await Order.findById(orderId).populate(
-            "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item"
+            "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
         );
 
-        console.log("populaetedOrder: ", populatedOrder);
+        const updatedShopOrder = populatedOrder.shopOrders.find(
+            (so) => so.shop?._id?.toString() === shopId,
+        );
+
         return res.status(200).json({
+            shopOrder: updatedShopOrder,
+            assignedDeliveryBoy: updatedShopOrder?.assignedDeliveryBoy,
+            availableDeliveryBoys: deliveryBoysPayload,
+            asignment: updatedShopOrder?.assignment?._id,
             data: populatedOrder,
             message: "Order status updated successfully",
         });
     } catch (error) {
+        console.error("UPDATE STATUS ERROR 👉", error);
         return res.status(500).json({
             message: "Server Error: updateOrderStatus",
-            error,
+            error: error.message,
         });
     }
 };
