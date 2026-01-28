@@ -71,9 +71,10 @@ export const placeOrder = async (req, res) => {
             shopOrders: shopOrders,
             delivaryFee: delivaryFee,
             payableAmount: payableAmount,
-
-        })
-        await newOrder.populate("user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item");
+        });
+        await newOrder.populate(
+            "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
+        );
         return res
             .status(201)
             .json({ data: newOrder, message: "Order Placed Successfully" });
@@ -95,24 +96,31 @@ export const getMyOrders = async (req, res) => {
         if (role === "user") {
             orders = await Order.find({ user: userId })
                 .sort({ createdAt: -1 })
-                .populate("shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item");
-        } 
-        else if (role === "owner") {
-
+                .populate(
+                    "shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
+                );
+        } else if (role === "owner") {
             // ✅ get owner's shop
             const ownerShop = await Shop.findOne({ owner: userId });
             if (!ownerShop) {
-                return res.status(404).json({ message: "Shop not found for this owner" });
+                return res
+                    .status(404)
+                    .json({ message: "Shop not found for this owner" });
             }
 
-            const allOrders = await Order.find({ "shopOrders.shop": ownerShop._id })
+            const allOrders = await Order.find({
+                "shopOrders.shop": ownerShop._id,
+            })
                 .sort({ createdAt: -1 })
-                .populate("user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item");
+                .populate(
+                    "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
+                );
 
             // ✅ FILTER shopOrders by SHOP ID (not owner)
             orders = allOrders.map((order) => {
                 const filteredShopOrders = order.shopOrders.filter(
-                    (so) => so.shop?._id?.toString() === ownerShop._id.toString()
+                    (so) =>
+                        so.shop?._id?.toString() === ownerShop._id.toString(),
                 );
 
                 return {
@@ -120,8 +128,7 @@ export const getMyOrders = async (req, res) => {
                     shopOrders: filteredShopOrders,
                 };
             });
-        } 
-        else {
+        } else {
             return res.status(403).json({ message: "Invalid role" });
         }
 
@@ -129,7 +136,6 @@ export const getMyOrders = async (req, res) => {
             data: orders,
             message: "Orders Fetched Successfully",
         });
-
     } catch (error) {
         return res.status(500).json({
             message: "Server Error: getMyOrders",
@@ -140,9 +146,41 @@ export const getMyOrders = async (req, res) => {
 
 export const updateOrderStatus = async (req, res) => {
     try {
-        const {orderId, shopId} = req.params;
+        const { orderId, shopId } = req.params;
+        const { status } = req.body;
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        const shopOrder = order.shopOrders.find(
+            (so) => so.shop?.toString() === shopId
+        );
+
+        if (!shopOrder) {
+            return res.status(404).json({ message: "Shop order not found" });
+        }
+
+        // ✅ update status
+        shopOrder.status = status;
+
+        await order.save();
+
+        // ✅ re-fetch order with full populate (same as getMyOrders)
+        const populatedOrder = await Order.findById(orderId).populate(
+            "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item"
+        );
+
+        console.log("populaetedOrder: ", populatedOrder);
+        return res.status(200).json({
+            data: populatedOrder,
+            message: "Order status updated successfully",
+        });
     } catch (error) {
-        
+        return res.status(500).json({
+            message: "Server Error: updateOrderStatus",
+            error,
+        });
     }
-    
-}
+};

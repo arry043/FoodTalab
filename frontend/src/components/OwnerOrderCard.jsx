@@ -3,6 +3,8 @@ import { MdLocationOn, MdPhone } from "react-icons/md";
 import { IoTimeOutline } from "react-icons/io5";
 import { FaUserCircle } from "react-icons/fa";
 import { LuMailCheck } from "react-icons/lu";
+import { serverUrl } from "../App";
+import axios from "axios";
 
 function OwnerOrderCard({ order, key }) {
     const formatOrderTime = (dateStr) => {
@@ -42,6 +44,24 @@ function OwnerOrderCard({ order, key }) {
         });
 
         return `${formattedDate} • ${formattedTime}`;
+    };
+
+    const handleUpdateStatus = async (orderId, shopId, status) => {
+        try {
+            const result = await axios.put(
+                `${serverUrl}/api/order/update-status/${orderId}/${shopId}`,
+                {
+                    status,
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+
+            console.log("update staus: ", result);
+        } catch (error) {
+            console.log("update status error: ", error);
+        }
     };
 
     return (
@@ -103,7 +123,7 @@ function OwnerOrderCard({ order, key }) {
                 {/* Status Badge */}
                 <div className="self-end md:self-auto">
                     <span className="inline-block text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-medium">
-                        Pending
+                        {order?.shopOrders[0]?.status}
                     </span>
                 </div>
             </div>
@@ -142,7 +162,7 @@ function OwnerOrderCard({ order, key }) {
                         </div>
                     </div>
                 ))}
-            </div> 
+            </div>
 
             {/* Bottom Info */}
             <div className="mt-4 flex justify-between items-center">
@@ -160,11 +180,22 @@ function OwnerOrderCard({ order, key }) {
             </div>
 
             {/* Action Buttons */}
+
             {/* Status Control */}
             <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                     <span>Change Status:</span>
-                    <select className="px-3 py-2 rounded-xl border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4d2d]">
+                    <select
+                        value={order?.shopOrders[0]?.status}
+                        onChange={(e) =>
+                            handleUpdateStatus(
+                                order?._id,
+                                order?.shopOrders[0]?.shop?._id,
+                                e.target.value,
+                            )
+                        }
+                        className="px-3 py-2 rounded-xl border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4d2d]"
+                    >
                         <option value="pending">Pending</option>
                         <option value="preparing">Preparing</option>
                         <option value="outForDelivery">Out for Delivery</option>
