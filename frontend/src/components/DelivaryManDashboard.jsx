@@ -386,10 +386,7 @@ const DelivaryManDashboard = () => {
                             {!showOtpBox ? (
                                 <button
                                     onClick={handleSendOtp}
-                                    className="w-full py-3 sm:py-3.5 rounded-xl 
-            text-sm sm:text-base font-semibold 
-            bg-green-500 text-white hover:bg-green-600 
-            active:scale-[0.99] transition"
+                                    className="w-full py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold bg-green-500 text-white hover:bg-green-600 active:scale-[0.99] transition"
                                 >
                                     📦 Mark Order as Delivered
                                 </button>
@@ -413,17 +410,12 @@ const DelivaryManDashboard = () => {
                                                 setOtp(e.target.value)
                                             }
                                             placeholder="Enter 6-digit OTP"
-                                            className="w-full sm:flex-1 border border-gray-300 rounded-xl 
-                    px-4 py-3 text-sm sm:text-base tracking-widest text-center
-                    focus:outline-none focus:ring-2 focus:ring-green-400"
+                                            className="w-full sm:flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm sm:text-base tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-green-400"
                                         />
 
                                         <button
                                             // onClick={handleVerifyOtp}
-                                            className="w-full sm:w-auto px-6 py-3 rounded-xl 
-                    text-sm sm:text-base font-semibold 
-                    bg-green-500 text-white hover:bg-green-600 
-                    active:scale-[0.98] transition"
+                                            className="w-full sm:w-auto px-6 py-3 rounded-xl text-sm sm:text-base font-semibold bg-green-500 text-white hover:bg-green-600 active:scale-[0.98] transition"
                                         >
                                             ✅ Confirm Delivery
                                         </button>
