@@ -43,7 +43,7 @@ const Navbar = () => {
 
     return (
         <div
-            className={`w-full ${role === "deliveryBoy" ? "gap-30 mt-2": ""} h-15 md:h-17 flex items-center justify-between md:justify-center gap-10 px-[20px] fixed top-0 z-[9999] bg-[#fff9f6] overflow-visible`}
+            className={`w-full ${role === "deliveryBoy" ? "gap-30": ""} h-15 md:h-17 flex items-center justify-between md:justify-center gap-10 px-[20px] fixed top-0 z-[9999] bg-[#fff9f6] overflow-visible`}
         >
             <h1 onClick={() => navigate("/")} className="text-3xl cursor-pointer font-bold mb-2 text-[#ff4d2d]">
                 FoodTalab

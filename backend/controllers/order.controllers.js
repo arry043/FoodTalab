@@ -130,7 +130,7 @@ export const getMyOrders = async (req, res) => {
                 };
             });
         }
-        
+
         res.status(200).json({
             data: orders,
             message: "Orders Fetched Successfully",
@@ -164,7 +164,7 @@ export const updateOrderStatus = async (req, res) => {
         let deliveryBoysPayload = [];
 
         // ✅ assign delivery boys when needed
-        if (status === "outForDelivery" || !shopOrder.assignment) {
+        if (status === "outForDelivery" && !shopOrder.assignment) {
             const { lattitude, longitude } = order.delivaryAddress;
 
             const deliveryBoys = await User.find({
@@ -273,20 +273,35 @@ export const getDeliveryBoyAssignment = async (req, res) => {
             broadcastedTo: deliveryBoyId,
             status: "BROADCASTED",
         })
-            .populate("order")
+            .populate({
+                path: "order",
+                populate: { path: "user", select: "fullName mobile" },
+            })
             .populate("shop")
             .populate("shopOrder");
 
+        // console.log("assignments: ", assignments);
+
         const formattedAssignments = assignments.map((a) => {
             const shopOrder = a.order.shopOrders.find(
-                (so) => so._id.toString() === a.shopOrder.toString()
+                (so) => so._id.toString() === a.shopOrder.toString(),
             );
 
             return {
                 assignmentId: a._id,
                 orderId: a.order._id,
-                shopName: a.shop.name,
-                deliveryAddress: a.order.delivaryAddress,
+
+                customer: {
+                    name: a.order.user?.fullName || "Customer Name",
+                    phone: a.order.user?.mobile || "Customer Phone",
+                },
+
+                shopName: a.shop?.name || "Shop Name",
+                shopAddress: a.shop?.address || "Shop Address",
+                shopContact: a.shop?.contact || "Shop Phone",
+
+                deliveryAddress: a.order?.delivaryAddress,
+
                 items: shopOrder?.shopOrderItems || [],
                 subTotal: shopOrder?.subTotal || 0,
             };
