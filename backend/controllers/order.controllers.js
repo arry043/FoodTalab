@@ -369,3 +369,65 @@ export const acceptOrder = async (req, res) => {
             .json({ message: "Server Error: acceptOrder", error });
     }
 };
+
+export const getCurrentOrder = async (req, res) => {
+    try {
+        const assignment = await DelivaryAssignment.findOne({
+            assignTo: req.user.userId,
+            status: "ASSIGNED",
+        })
+            .populate("shop")
+            .populate("assignTo")
+            .populate({
+                path: "order",
+                populate: {
+                    path: "user",
+                    select: "fullName email mobile location",
+                },
+            });
+
+        if (!assignment) {
+            return res.status(404).json({ message: "No current assignment" });
+        }
+
+        if(!assignment.order){
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        // ✅ sirf assigned shopOrder nikaalo
+        const order = assignment.order;
+
+        const shopOrder = order.shopOrders.find(
+            (so) => so._id.toString() === assignment.shopOrder.toString(),
+        );
+
+        if (!shopOrder) {
+            return res.status(404).json({ message: "Shop order not found" });
+        }
+
+        return res.status(200).json({
+            message: "Current delivery order",
+            data: {
+                _id: assignment.order._id,
+                assignmentId: assignment._id,
+                status: assignment.status,
+                acceptedAt: assignment.acceptedAt,
+
+                shop: assignment.shop,
+                deliveryBoy: assignment.assignTo,
+
+                customer: order.user,
+                deliveryAddress: order.delivaryAddress,
+                paymentMethod: order.paymentMethod,
+
+                shopOrder, // ✅ only this shop's items
+                totalAmount: shopOrder.subTotal,
+                deliveryFee: order.delivaryFee,
+                payableAmount: order.payableAmount,
+            },
+        });
+    } catch (error) {
+        console.log("getCurrentOrder error:", error);
+        return res.status(500).json({ message: "Server error", error });
+    }
+};
