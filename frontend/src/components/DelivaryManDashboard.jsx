@@ -14,6 +14,7 @@ const DelivaryManDashboard = () => {
     const [availableAssignments, setAvailableAssignments] = React.useState([]);
     const [currentOrder, setCurrentOrder] = React.useState({});
     const hasCurrentOrder = currentOrder && currentOrder.assignmentId;
+    const [showOtpBox, setShowOtpBox] = React.useState(false);
 
     const getAssignments = async () => {
         try {
@@ -28,6 +29,11 @@ const DelivaryManDashboard = () => {
         } catch (error) {
             console.log("get my orders Error:", error);
         }
+    };
+
+    const handleSendOtp = async (e) => {
+        e.preventDefault();
+        setShowOtpBox(true);
     };
 
     const acceptOrder = async (assignmentId) => {
@@ -372,19 +378,67 @@ const DelivaryManDashboard = () => {
                             </p>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="mt-5 flex gap-3">
-                            <button className="flex-1 py-2 rounded-xl text-sm bg-green-500 text-white hover:bg-green-600 transition">
-                                Mark Picked Up
-                            </button>
-
-                            <button className="flex-1 py-2 rounded-xl text-sm bg-blue-500 text-white hover:bg-blue-600 transition">
-                                Mark Delivered
-                            </button>
-                        </div>
-
                         {/* Delivery Boy Tracking */}
                         <DeliveryBoyTracking data={currentOrder} />
+
+                        {/* Action Section */}
+                        <div className="mt-5 bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5">
+                            {!showOtpBox ? (
+                                <button
+                                    onClick={handleSendOtp}
+                                    className="w-full py-3 sm:py-3.5 rounded-xl 
+            text-sm sm:text-base font-semibold 
+            bg-green-500 text-white hover:bg-green-600 
+            active:scale-[0.99] transition"
+                                >
+                                    📦 Mark Order as Delivered
+                                </button>
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                    {/* Info */}
+                                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                                        🔐 Enter OTP sent to{" "}
+                                        <span className="font-semibold text-gray-800">
+                                            {currentOrder?.customer?.fullName}
+                                        </span>
+                                    </p>
+
+                                    {/* OTP + Button */}
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            maxLength={6}
+                                            onChange={(e) =>
+                                                setOtp(e.target.value)
+                                            }
+                                            placeholder="Enter 6-digit OTP"
+                                            className="w-full sm:flex-1 border border-gray-300 rounded-xl 
+                    px-4 py-3 text-sm sm:text-base tracking-widest text-center
+                    focus:outline-none focus:ring-2 focus:ring-green-400"
+                                        />
+
+                                        <button
+                                            // onClick={handleVerifyOtp}
+                                            className="w-full sm:w-auto px-6 py-3 rounded-xl 
+                    text-sm sm:text-base font-semibold 
+                    bg-green-500 text-white hover:bg-green-600 
+                    active:scale-[0.98] transition"
+                                        >
+                                            ✅ Confirm Delivery
+                                        </button>
+                                    </div>
+
+                                    {/* Cancel */}
+                                    <button
+                                        onClick={() => setShowOtpBox(false)}
+                                        className="self-center text-xs sm:text-sm text-gray-500 hover:text-gray-700"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
