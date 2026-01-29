@@ -26,6 +26,21 @@ const DelivaryManDashboard = () => {
             console.log("get my orders Error:", error);
         }
     };
+
+    const acceptOrder = async (assignmentId) => {
+        try {
+            const result = await axios.get(
+                `${serverUrl}/api/order/accept-order/${assignmentId}`,
+                {
+                    withCredentials: true,
+                },
+            );
+            console.log(result.data);
+        } catch (error) {
+            console.log("err: fetcing aceept order", error);
+        }
+    };
+
     useEffect(() => {
         getAssignments();
     }, [userData]);
@@ -116,8 +131,7 @@ const DelivaryManDashboard = () => {
                                     {/* Header */}
                                     <div className="flex justify-between items-center mb-3">
                                         <p className="text-sm font-semibold text-gray-800">
-                                            Order #
-                                            {order.orderId || "XXXXXX"}
+                                            Order #{order.orderId || "XXXXXX"}
                                         </p>
 
                                         <span className="text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full">
@@ -133,8 +147,7 @@ const DelivaryManDashboard = () => {
                                                 🏪 Pickup From
                                             </p>
                                             <p className="text-sm font-medium text-gray-800">
-                                                {order.shopName ||
-                                                    "Shop Name"}
+                                                {order.shopName || "Shop Name"}
                                             </p>
                                             <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                                                 📍{" "}
@@ -192,14 +205,14 @@ const DelivaryManDashboard = () => {
                                                     key={idx}
                                                     className="flex justify-between text-xs text-gray-600"
                                                 >
-                                                    <div className="flex items-start gap-3">
+                                                    <div className="flex items-start gap-2">
                                                         <span className="text-sm text-gray-700 break-words flex-1">
                                                             {item.name ||
                                                                 "Item Name"}
                                                         </span>
 
-                                                        <span className="font-medium mt-[2px] whitespace-nowrap">
-                                                            x
+                                                        <span className="font-medium mt-[2px]  whitespace-nowrap">
+                                                            x {""}
                                                             {item.quantity || 1}
                                                         </span>
                                                     </div>
@@ -218,7 +231,12 @@ const DelivaryManDashboard = () => {
                                             💰 Total: ₹{order.subTotal || "0"}
                                         </p>
 
-                                        <button className="px-5 py-2 text-xs rounded-full bg-[#ff4d2d] text-white hover:bg-[#e64427] transition">
+                                        <button
+                                            onClick={() =>
+                                                acceptOrder(order.assignmentId)
+                                            }
+                                            className="px-5 py-2 text-xs rounded-full bg-[#ff4d2d] text-white hover:bg-[#e64427] transition"
+                                        >
                                             Accept Delivery
                                         </button>
                                     </div>

@@ -115,7 +115,8 @@ export const getMyOrders = async (req, res) => {
                 .sort({ createdAt: -1 })
                 .populate(
                     "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
-                );
+                )
+                .populate("shopOrders.assignedDeliveryBoy");
 
             // ✅ FILTER shopOrders by SHOP ID (not owner)
             orders = allOrders.map((order) => {
@@ -317,5 +318,54 @@ export const getDeliveryBoyAssignment = async (req, res) => {
             message: "Server Error: getAssignment",
             error: error.message,
         });
+    }
+};
+
+export const acceptOrder = async (req, res) => {
+    try {
+        const { assignmentId } = req.params;
+        const assignment = await DelivaryAssignment.findById(assignmentId);
+        if (!assignment) {
+            return res.status(404).json({ message: "Assignment not found" });
+        }
+        if (assignment.status !== "BROADCASTED") {
+            return res
+                .status(400)
+                .json({ message: "Assignment already accepte or expired" });
+        }
+        const alreadyAssigned = await DelivaryAssignment.findOne({
+            assignTo: req.user.userId,
+            status: {
+                $nin: ["BROADCASTED", "EXPIRED"],
+            },
+        });
+        if (alreadyAssigned) {
+            return res
+                .status(400)
+                .json({ message: "You already have an assignment of order" });
+        }
+        assignment.assignTo = req.user.userId;
+        assignment.status = "ASSIGNED";
+        assignment.acceptedAt = new Date();
+        await assignment.save();
+
+        const order = await Order.findById(assignment.order);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        const shopOrder = order.shopOrders.find(
+            (so) => so._id.toString() === assignment.shopOrder.toString(),
+        );
+        shopOrder.assignedDeliveryBoy = req.user.userId;
+        await order.save();
+        await order.populate("shopOrders.assignedDeliveryBoy");
+        return res
+            .status(200)
+            .json({ message: "Assignment / Order accepted successfully" });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: "Server Error: acceptOrder", error });
     }
 };

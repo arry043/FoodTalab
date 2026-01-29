@@ -11,6 +11,8 @@ import { updateOrderStatus } from "../redux/userSlice";
 function OwnerOrderCard({ order, key }) {
     const dispatch = useDispatch();
     const [availableBoys, setAvailableBoys] = React.useState([]);
+    console.log("availabe boys in owner card", availableBoys);
+    console.log("orders in owner card", order);
 
     const formatOrderTime = (dateStr) => {
         const date = new Date(dateStr);
@@ -215,51 +217,114 @@ function OwnerOrderCard({ order, key }) {
                 </button>
             </div>
 
-            {/* Delivery Boys */}
+            {/* Delivery Boys Section */}
             {order?.shopOrders[0]?.status === "outForDelivery" && (
-                <div className="mt-6 bg-[#fff9f6] border border-[#ffd5c8] rounded-2xl p-4">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                        🚴 Available Delivery Partners
+                <div className="mt-6 bg-[#fff9f6] border border-[#ffd5c8] rounded-2xl p-4 relative">
+                    {/* STATUS BADGE — TOP RIGHT */}
+                    <span
+                        className={`absolute top-3 right-3 text-xs px-3 py-1 rounded-full font-medium
+            ${
+                order.shopOrders[0]?.assignedDeliveryBoy
+                    ? "bg-green-100 text-green-700"
+                    : "bg-yellow-100 text-yellow-700"
+            }`}
+                    >
+                        {order.shopOrders[0]?.assignedDeliveryBoy
+                            ? "Assigned"
+                            : "Searching"}
+                    </span>
+
+                    <h3 className="text-sm font-semibold text-gray-700 mb-4">
+                        🚴 Delivery Partner
                     </h3>
 
-                    {availableBoys.length > 0 ? (
-                        <div className="space-y-3">
-                            {availableBoys.map((deliveryBoy) => (
-                                <div
-                                    key={deliveryBoy.id}
-                                    className="flex items-center justify-between bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition"
-                                >
-                                    {/* Left Info */}
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-[#ffebe4] flex items-center justify-center text-[#ff4d2d] font-bold">
-                                            {deliveryBoy.fullName?.charAt(0)}
+                    {/* ===== AVAILABLE DELIVERY BOYS ===== */}
+                    {availableBoys.length > 0 &&
+                        !order.shopOrders[0]?.assignedDeliveryBoy && (
+                            <div className="space-y-3">
+                                {availableBoys.map((deliveryBoy) => (
+                                    <div
+                                        key={deliveryBoy.id}
+                                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition gap-3"
+                                    >
+                                        {/* Profile */}
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-11 w-11 rounded-full bg-[#ffebe4] flex items-center justify-center text-[#ff4d2d] font-bold text-lg">
+                                                {deliveryBoy.fullName?.charAt(
+                                                    0,
+                                                ) || "D"}
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-800">
+                                                    {deliveryBoy.fullName ||
+                                                        "Delivery Partner"}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    📞{" "}
+                                                    {deliveryBoy.mobile ||
+                                                        "Mobile"}
+                                                </p>
+                                                <p className="text-xs text-gray-400 truncate max-w-[200px]">
+                                                    {deliveryBoy.email ||
+                                                        "Email"}
+                                                </p>
+                                            </div>
                                         </div>
 
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-800">
-                                                {deliveryBoy.fullName}
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                                📞 {deliveryBoy.mobile}
-                                            </p>
-                                            <p className="text-xs text-gray-400 truncate max-w-[160px]">
-                                                {deliveryBoy.email}
-                                            </p>
-                                        </div>
+                                        {/* Assign Button */}
+                                        <button className="self-end sm:self-auto px-5 py-2 text-xs rounded-full bg-[#ff4d2d] text-white hover:bg-[#e64427] transition">
+                                            Assign
+                                        </button>
                                     </div>
+                                ))}
+                            </div>
+                        )}
 
-                                    {/* Action */}
-                                    <button className="px-4 py-1.5 text-xs rounded-full bg-[#ff4d2d] text-white hover:bg-[#e64427] transition">
-                                        Assign
-                                    </button>
+                    {/* ===== ASSIGNED DELIVERY BOY ===== */}
+                    {order?.shopOrders?.[0]?.assignedDeliveryBoy && (
+                        <div className="bg-white rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            {/* Profile */}
+                            <div className="flex items-center gap-3">
+                                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-lg">
+                                    {order.shopOrders[0].assignedDeliveryBoy.fullName?.charAt(
+                                        0,
+                                    ) || "D"}
                                 </div>
-                            ))}
+
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-800">
+                                        {order.shopOrders[0].assignedDeliveryBoy
+                                            .fullName || "Delivery Partner"}
+                                    </p>
+
+                                    <p className="text-xs text-gray-500">
+                                        📞{" "}
+                                        {order.shopOrders[0].assignedDeliveryBoy
+                                            .mobile || "N/A"}
+                                    </p>
+
+                                    <p className="text-xs text-gray-400 truncate max-w-[220px]">
+                                        {order.shopOrders[0].assignedDeliveryBoy
+                                            .email || ""}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Assigned Badge */}
+                            <span className="self-start sm:self-auto text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium">
+                                ✔ Assigned
+                            </span>
                         </div>
-                    ) : (
-                        <p className="text-sm text-gray-500">
-                            Wait for being Assigned delivery partner...
-                        </p>
                     )}
+
+                    {/* ===== NO DELIVERY BOY YET ===== */}
+                    {availableBoys.length === 0 &&
+                        !order.shopOrders[0]?.assignedDeliveryBoy && (
+                            <p className="text-sm text-gray-500 mt-2">
+                                Finding nearby delivery partners...
+                            </p>
+                        )}
                 </div>
             )}
         </div>
