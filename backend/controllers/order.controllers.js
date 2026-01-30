@@ -390,7 +390,7 @@ export const getCurrentOrder = async (req, res) => {
             return res.status(404).json({ message: "No current assignment" });
         }
 
-        if(!assignment.order){
+        if (!assignment.order) {
             return res.status(404).json({ message: "Order not found" });
         }
 
@@ -429,5 +429,36 @@ export const getCurrentOrder = async (req, res) => {
     } catch (error) {
         console.log("getCurrentOrder error:", error);
         return res.status(500).json({ message: "Server error", error });
+    }
+};
+
+export const getOrderById = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = await Order.findById(orderId)
+            .populate("shopOrders.shop shopOrders.assignedDeliveryBoy")
+            .populate({
+                path: "shopOrders.shop",
+                model: "Shop",
+            })
+            .populate({
+                path: "shopOrders.assignedDeliveryBoy",
+                model: "User",
+            })
+            .populate({
+                path: "shopOrders.shopOrderItems.item",
+                model: "Item",
+            })
+            .lean();
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        return res.status(200).json({ data: order, message: "Order found" });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: "Server Error: getOrderById", error });
     }
 };

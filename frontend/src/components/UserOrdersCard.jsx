@@ -2,6 +2,7 @@ import React from "react";
 import { FaStore } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
 import { IoTimeOutline } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 function UserOrdersCard({ order, index }) {
     const formatOrderTime = (dateStr) => {
@@ -42,6 +43,8 @@ function UserOrdersCard({ order, index }) {
 
         return `${formattedDate} • ${formattedTime}`;
     };
+
+    const navigate = useNavigate();
 
     return (
         <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-5 border border-gray-100">
@@ -174,10 +177,10 @@ function UserOrdersCard({ order, index }) {
 
             {/* Action Buttons */}
             <div className="mt-4 flex gap-3">
-                <button className="flex-1 py-2 text-sm rounded-xl border border-[#ff4d2d] text-[#ff4d2d] hover:bg-[#ff4d2d] hover:text-white transition">
-                    View Details
+                <button onClick={()=> navigate(`/track-order/${order?._id}`)} className="flex-1 py-2 text-sm rounded-xl border border-[#ff4d2d] text-[#ff4d2d] hover:bg-[#ff4d2d] hover:text-white transition">
+                    Track Order
                 </button>
-                <button className="flex-1 py-2 text-sm rounded-xl bg-[#ff4d2d] text-white hover:bg-[#e64427] transition">
+                <button onClick={()=> navigate("/")}  className="flex-1 py-2 text-sm rounded-xl bg-[#ff4d2d] text-white hover:bg-[#e64427] transition">
                     Reorder
                 </button>
             </div>

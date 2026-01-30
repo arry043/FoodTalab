@@ -1,5 +1,5 @@
 import express from "express";
-import { acceptOrder, getCurrentOrder, getDeliveryBoyAssignment, getMyOrders, placeOrder, updateOrderStatus } from "../controllers/order.controllers.js";
+import { acceptOrder, getCurrentOrder, getDeliveryBoyAssignment, getMyOrders, getOrderById, placeOrder, updateOrderStatus } from "../controllers/order.controllers.js";
 import { isAuth } from "../middlewares/isAuth.js";
 const orderRouter = express.Router();
 
@@ -9,6 +9,7 @@ orderRouter.get("/get-assignments", isAuth, getDeliveryBoyAssignment);
 orderRouter.put("/update-status/:orderId/:shopId", isAuth, updateOrderStatus);
 orderRouter.get("/accept-order/:assignmentId", isAuth, acceptOrder);
 orderRouter.get("/get-current-order/", isAuth, getCurrentOrder);
+orderRouter.get("/get-order/:orderId", isAuth, getOrderById);
 
 
 export default orderRouter;
