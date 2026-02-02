@@ -15,7 +15,7 @@ function OwnerItemCard({ key, data }) {
         const isConfirm = window.confirm(
             "Are you sure you want to delete this item?",
         );
-        if (!isConfirm) return; // ❌ cancel pe yahin ruk jao
+        if (!isConfirm) return; // ❌ cancel - do nothing
         console.log("deleting....");
         try {
             const result = await axios.delete(
