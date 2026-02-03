@@ -15,6 +15,7 @@ const DelivaryManDashboard = () => {
     const [currentOrder, setCurrentOrder] = React.useState({});
     const hasCurrentOrder = currentOrder && currentOrder.assignmentId;
     const [showOtpBox, setShowOtpBox] = React.useState(false);
+    const [otp, setOtp] = React.useState("");
 
     const getAssignments = async () => {
         try {
@@ -31,11 +32,6 @@ const DelivaryManDashboard = () => {
         }
     };
 
-    const handleSendOtp = async (e) => {
-        e.preventDefault();
-        setShowOtpBox(true);
-    };
-
     const acceptOrder = async (assignmentId) => {
         try {
             const result = await axios.get(
@@ -48,6 +44,44 @@ const DelivaryManDashboard = () => {
             console.log(result.data);
         } catch (error) {
             console.log("err: fetcing aceept order", error);
+        }
+    };
+
+    const sendOtp = async (shopOrderId) => {
+        try {
+            const result = await axios.post(
+                `${serverUrl}/api/order/send-delivery-otp`,
+                {
+                    orderId: currentOrder?._id,
+                    shopOrderId: shopOrderId,
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+            console.log(result.data);
+            setShowOtpBox(true);
+        } catch (error) {
+            console.log("err: sending otp", error);
+        }
+    };
+
+    const verifyOtp = async () => {
+        try {
+            const result = await axios.post(
+                `${serverUrl}/api/order/verify-delivery-otp`,
+                {
+                    orderId: currentOrder?._id,
+                    shopOrderId: currentOrder?.shopOrders?._id,
+                    otp,
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+            console.log(result.data);
+        } catch (error) {
+            console.log("err: verifying otp", error);
         }
     };
 
@@ -385,7 +419,7 @@ const DelivaryManDashboard = () => {
                         <div className="mt-5 bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5">
                             {!showOtpBox ? (
                                 <button
-                                    onClick={handleSendOtp}
+                                    onClick={() => sendOtp(currentOrder?.shopOrder?._id)}
                                     className="w-full py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold bg-green-500 text-white hover:bg-green-600 active:scale-[0.99] transition"
                                 >
                                     📦 Mark Order as Delivered
@@ -409,12 +443,13 @@ const DelivaryManDashboard = () => {
                                             onChange={(e) =>
                                                 setOtp(e.target.value)
                                             }
+                                            value={otp}
                                             placeholder="Enter 6-digit OTP"
                                             className="w-full sm:flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm sm:text-base tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-green-400"
                                         />
 
                                         <button
-                                            // onClick={handleVerifyOtp}
+                                            onClick={verifyOtp}
                                             className="w-full sm:w-auto px-6 py-3 rounded-xl text-sm sm:text-base font-semibold bg-green-500 text-white hover:bg-green-600 active:scale-[0.98] transition"
                                         >
                                             ✅ Confirm Delivery
