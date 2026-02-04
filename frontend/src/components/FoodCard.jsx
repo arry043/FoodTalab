@@ -7,7 +7,6 @@ function FoodCard({ data }) {
     const dispatch = useDispatch();
 
     const cartItems = useSelector((state) => state.user.cartItems);
-    // console.log("Cart Items:",cartItems);
 
     const cartItem = cartItems.find((i) => i.id === data._id);
     const quantity = cartItem?.quantity || 0;
