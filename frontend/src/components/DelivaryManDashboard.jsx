@@ -66,13 +66,13 @@ const DelivaryManDashboard = () => {
         }
     };
 
-    const verifyOtp = async () => {
+    const verifyOtp = async (shopOrderId) => {
         try {
             const result = await axios.post(
                 `${serverUrl}/api/order/verify-delivery-otp`,
                 {
                     orderId: currentOrder?._id,
-                    shopOrderId: currentOrder?.shopOrders?._id,
+                    shopOrderId: shopOrderId,
                     otp,
                 },
                 {
@@ -419,7 +419,9 @@ const DelivaryManDashboard = () => {
                         <div className="mt-5 bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5">
                             {!showOtpBox ? (
                                 <button
-                                    onClick={() => sendOtp(currentOrder?.shopOrder?._id)}
+                                    onClick={() =>
+                                        sendOtp(currentOrder?.shopOrder?._id)
+                                    }
                                     className="w-full py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold bg-green-500 text-white hover:bg-green-600 active:scale-[0.99] transition"
                                 >
                                     📦 Mark Order as Delivered
@@ -444,12 +446,17 @@ const DelivaryManDashboard = () => {
                                                 setOtp(e.target.value)
                                             }
                                             value={otp}
-                                            placeholder="Enter 6-digit OTP"
+                                            placeholder="Enter 4-digit OTP"
                                             className="w-full sm:flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm sm:text-base tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-green-400"
                                         />
 
                                         <button
-                                            onClick={verifyOtp}
+                                            onClick={() =>
+                                                verifyOtp(
+                                                    currentOrder?.shopOrder
+                                                        ?._id,
+                                                )
+                                            }
                                             className="w-full sm:w-auto px-6 py-3 rounded-xl text-sm sm:text-base font-semibold bg-green-500 text-white hover:bg-green-600 active:scale-[0.98] transition"
                                         >
                                             ✅ Confirm Delivery
