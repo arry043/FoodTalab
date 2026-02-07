@@ -20,6 +20,7 @@ import useGetMyOrders from "./hooks/useGetMyOrders";
 import useUpdateLocation from "./hooks/useUpdateLocation";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import axios from "axios";
+import ShopView from "./pages/ShopView";
 
 export const serverUrl = "http://localhost:8000";
 
@@ -53,6 +54,7 @@ function App() {
             <Route path="/order-placed" element={ !userData ? <Navigate to="/signin" /> : <OrderPlaced />} />
             <Route path="/my-orders" element={ !userData ? <Navigate to="/signin" /> : <MyOrders />} />
             <Route path="/track-order/:orderId" element={ !userData ? <Navigate to="/signin" /> : <TrackOrderPage />} />
+            <Route path="/shop-view/:shopId" element={ !userData ? <Navigate to="/signin" /> : <ShopView />} />
         </Routes>
     );
 

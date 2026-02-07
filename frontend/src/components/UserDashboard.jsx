@@ -6,12 +6,14 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import ShopsInMyCityCard from "./ShopsInMyCityCard.jsx";
 import FoodCard from "./FoodCard.jsx";
+import { useNavigate } from "react-router-dom";
 
 const UserDashboard = () => {
     // REDUX - getting user data
     const { userData, city, shopsInMyCity, itemsInMyCity } = useSelector(
         (state) => state.user,
     );
+    const navigate = useNavigate();
     // console.log(userData);
     // console.log("Shops: ", shopsInMyCity);
     const [selectedCategoryList, setSelectedCategoryList] =
@@ -111,6 +113,7 @@ const UserDashboard = () => {
                     <h2 className="text-2xl font-bold text-gray-900">
                         Best Shops in {city}
                     </h2>
+                    <button onClick={() => navigate("shop-view/6986d4fb8c0f5fd125e2555d")}>new shop</button>
 
                     <div className="hidden md:flex gap-3">
                         <button
@@ -146,7 +149,23 @@ const UserDashboard = () => {
                                 name={shop.name}
                                 image={shop.image}
                             />
-                        ))}
+                        ))} 
+                    <div onClick={() => setSelectedCategoryList(itemsInMyCity)} className="flex flex-col items-center shrink-0 cursor-pointer group">
+                        <div
+                            className="w-[90px] h-[90px] sm:w-[105px] sm:h-[105px] md:w-[120px] md:h-[120px]
+                rounded-xl overflow-hidden bg-white shadow-md
+                group-hover:shadow-xl transition"
+                        >
+                            <img
+                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIeaFxft3L8b0IPngXWlPR0mP5qY-2Rbsc0zQLF9OZmQ&s"
+                                className="w-full h-full object-cover group-hover:scale-105 transition"
+                            />
+                        </div>
+
+                        <p className=" mt-2 text-sm sm:text-base font-medium text-gray-700 text-center w-[90px] leading-tight line-clamp-2">
+                            All Shops
+                        </p>
+                    </div>
                 </div>
             </div>
             {/* PRODUCT */}

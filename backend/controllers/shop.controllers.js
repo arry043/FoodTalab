@@ -92,13 +92,36 @@ export const getShopByCity = async (req, res) => {
                 options: { sort: { updatedAt: -1 } },
             });
 
-        if(!shops) {
-            return res.status(400).json({ message: "Shops not found, in your city" });
+        if (!shops) {
+            return res
+                .status(400)
+                .json({ message: "Shops not found, in your city" });
         }
         return res.status(200).json({ data: shops });
     } catch (error) {
         return res
             .status(500)
             .json({ message: `Server Error: getShopByCity, ${error}` });
+    }
+};
+
+export const getShopById = async (req, res) => {
+    try {
+        const { shopId } = req.params;
+        const shop = await Shop.findById(shopId)
+            .populate("owner")
+            .populate({
+                path: "items",
+                options: { sort: { updatedAt: -1 } },
+            });
+
+        if (!shop) {
+            return res.status(400).json({ message: "Shop not found" });
+        }
+        return res.status(200).json({ data: shop });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: `Server Error: getShopById, ${error}` });
     }
 };
