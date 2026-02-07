@@ -96,7 +96,7 @@ export const editItem = async (req, res) => {
 export const getItemById = async (req, res) => {
     try {
         const itemId = req.params?.itemId;
-        const item = await Item.findById(itemId);
+        const item = await Item.findById(itemId).populate("shop");
         if (!item) {
             return res.status(400).json({ message: "Item not found" });
         }

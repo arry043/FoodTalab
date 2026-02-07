@@ -21,6 +21,7 @@ import useUpdateLocation from "./hooks/useUpdateLocation";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import axios from "axios";
 import ShopView from "./pages/ShopView";
+import FoodPreview from "./pages/FoodPreview";
 
 export const serverUrl = "http://localhost:8000";
 
@@ -49,6 +50,7 @@ function App() {
             <Route path="/create-edit-shop" element={ !userData ? <Navigate to="/signin" /> : <CreateEditShop />} />
             <Route path="/add-item" element={ !userData ? <Navigate to="/signin" /> : <AddItem />} />
             <Route path="/edit-item/:itemId" element={ !userData ? <Navigate to="/signin" /> : <EditItem />} />
+            <Route path="/food-preview/:itemId" element={ !userData ? <Navigate to="/signin" /> : <FoodPreview />} />
             <Route path="/cart" element={ !userData ? <Navigate to="/signin" /> : <CartPage />} />
             <Route path="/checkout" element={ !userData ? <Navigate to="/signin" /> : <CheckOutPage />} />
             <Route path="/order-placed" element={ !userData ? <Navigate to="/signin" /> : <OrderPlaced />} />

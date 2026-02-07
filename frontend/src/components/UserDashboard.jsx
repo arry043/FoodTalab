@@ -113,7 +113,7 @@ const UserDashboard = () => {
                     <h2 className="text-2xl font-bold text-gray-900">
                         Best Shops in {city}
                     </h2>
-                    <button onClick={() => navigate("shop-view/6986d4fb8c0f5fd125e2555d")}>new shop</button>
+                    {/* <button onClick={() => navigate("shop-view/6986d4fb8c0f5fd125e2555d")}>new shop</button> */}
 
                     <div className="hidden md:flex gap-3">
                         <button

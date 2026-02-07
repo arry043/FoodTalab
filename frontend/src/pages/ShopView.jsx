@@ -20,7 +20,7 @@ function ShopView() {
                 { withCredentials: true }
             );
             setShop(res.data.data);
-            console.log("res: ", res.data.data);
+            // console.log("res: ", res.data.data);
         } catch (err) {
             console.error("Error fetching shop:", err);
         } finally {

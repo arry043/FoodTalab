@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { FaDrumstickBite, FaLeaf, FaStar } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, removeFromCart } from "../redux/userSlice";
+import { useNavigate } from "react-router-dom";
 
 function FoodCard({ data }) {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const cartItems = useSelector((state) => state.user.cartItems);
 
@@ -47,7 +49,10 @@ function FoodCard({ data }) {
             overflow-hidden flex flex-col group"
         >
             {/* IMAGE */}
-            <div className="relative w-full h-[180px] overflow-hidden shrink-0">
+            <div
+                className="relative w-full h-[180px] overflow-hidden shrink-0"
+                onClick={() => navigate(`/food-preview/${data._id}`)}
+            >
                 <img
                     src={data.image}
                     alt={data.name}
