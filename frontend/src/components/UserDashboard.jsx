@@ -13,9 +13,14 @@ import { useState } from "react";
 
 const UserDashboard = () => {
     // REDUX - getting user data
-    const { userData, city, shopsInMyCity, itemsInMyCity } = useSelector(
-        (state) => state.user,
-    );
+    const {
+        userData,
+        city,
+        shopsInMyCity,
+        itemsInMyCity,
+        searchItems,
+        isSearching,
+    } = useSelector((state) => state.user);
     const navigate = useNavigate();
     // console.log(userData);
     // console.log("Shops: ", shopsInMyCity);
@@ -35,7 +40,7 @@ const UserDashboard = () => {
 
     const handleFilterByShop = (shopId) => {
         const filteredItems = itemsInMyCity.filter(
-            (item) => item?.shop === shopId,
+            (item) => item?.shop?._id === shopId,
         );
         setSelectedCategoryList(filteredItems);
     };
@@ -61,6 +66,15 @@ const UserDashboard = () => {
     const scrollShopRight = () => {
         shopScrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
     };
+
+    const showSearchResults = searchItems && searchItems.length > 0;
+    const showNoSearchResult = searchItems && searchItems.length === 0;
+
+    useEffect(() => {
+        if (!isSearching) {
+            setSelectedCategoryList(itemsInMyCity);
+        }
+    }, [itemsInMyCity, isSearching]);
 
     return (
         <div className="w-full min-h-screen bg-white flex flex-col items-center">
@@ -177,24 +191,34 @@ const UserDashboard = () => {
             {/* PRODUCT */}
             <div className="w-full max-w-7xl px-5 mt-10">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    Suggested foods for you 😋
+                    {isSearching
+                        ? "Search Results 🍽️"
+                        : "Suggested foods for you 😋"}
                 </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 place-items-stretch">
-                    {selectedCategoryList && selectedCategoryList.length > 0 ? (
-                        selectedCategoryList.map((item, index) => (
-                            <FoodCard key={index} data={item} />
-                        ))
-                    ) : itemsInMyCity && itemsInMyCity.length > 0 ? (
-                        itemsInMyCity.map((item, index) => (
-                            <FoodCard key={index} data={item} />
-                        ))
+                {/* 🔍 WHEN SEARCHING */}
+                {isSearching ? (
+                    searchItems.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            {searchItems.map((item) => (
+                                <FoodCard key={item._id} data={item} />
+                            ))}
+                        </div>
                     ) : (
-                        <p className="text-gray-500">
-                            No items available in your city.
-                        </p>
-                    )}
-                </div>
+                        <div className="flex justify-center items-center h-[40vh]">
+                            <h2 className="text-xl font-semibold text-gray-400">
+                                Food Not Found...!
+                            </h2>
+                        </div>
+                    )
+                ) : (
+                    /* 🏠 NORMAL DASHBOARD */
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {selectedCategoryList.map((item) => (
+                            <FoodCard key={item._id} data={item} />
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

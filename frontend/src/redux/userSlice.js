@@ -14,6 +14,8 @@ const userSlice = createSlice({
         totalAmount: 0,
         delivaryFee: 49,
         myOrders: [],
+        searchItems: [],
+        isSearching: false,
     },
     reducers: {
         setUserData: (state, action) => {
@@ -49,10 +51,10 @@ const userSlice = createSlice({
                 (sum, item) => sum + item.price * item.quantity,
                 0,
             );
-            if(state.totalAmount > 500){
-                state.delivaryFee = 0
-            }else{
-                state.delivaryFee = 49
+            if (state.totalAmount > 500) {
+                state.delivaryFee = 0;
+            } else {
+                state.delivaryFee = 49;
             }
         },
 
@@ -74,32 +76,40 @@ const userSlice = createSlice({
                 (sum, item) => sum + item.price * item.quantity,
                 0,
             );
-            if(state.totalAmount > 500){
-                state.delivaryFee = 0
-            }else{
-                state.delivaryFee = 49
+            if (state.totalAmount > 500) {
+                state.delivaryFee = 0;
+            } else {
+                state.delivaryFee = 49;
             }
         },
         removeItemCompletelyFromCart: (state, action) => {
             const id = action.payload;
             state.cartItems = state.cartItems.filter((i) => i.id !== id);
         },
-        setMyOrders: (state,action) => {
-            state.myOrders = action.payload
+        setMyOrders: (state, action) => {
+            state.myOrders = action.payload;
         },
         addMyOrders: (state, action) => {
             state.myOrders = [action.payload, ...state.myOrders];
         },
         updateOrderStatus: (state, action) => {
-            const {orderId, shopId, status} = action.payload;
+            const { orderId, shopId, status } = action.payload;
             const order = state.myOrders.find((o) => o._id === orderId);
-            if(order){
-                const shopOrder = order.shopOrders.find((so) => so.shop?._id.toString() === shopId);
-                if(shopOrder){
+            if (order) {
+                const shopOrder = order.shopOrders.find(
+                    (so) => so.shop?._id.toString() === shopId,
+                );
+                if (shopOrder) {
                     shopOrder.status = status;
                 }
             }
-        }
+        },
+        setSearchItems: (state, action) => {
+            state.searchItems = action.payload;
+        },
+        setIsSearching: (state, action) => {
+            state.isSearching = action.payload;
+        },
     },
 });
 
@@ -117,6 +127,8 @@ export const {
     setDelivaryFee,
     setMyOrders,
     addMyOrders,
-    updateOrderStatus
+    updateOrderStatus,
+    setSearchItems,
+    setIsSearching,
 } = userSlice.actions;
 export default userSlice.reducer;

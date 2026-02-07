@@ -160,7 +160,7 @@ export const getItemsByCity = async (req, res) => {
 export const searchItems = async (req, res) => {
     try {
         const { query, city } = req.query;
-    
+
         if (!query || !city) {
             return res
                 .status(400)
@@ -193,9 +193,10 @@ export const searchItems = async (req, res) => {
         }).populate("shop");
 
         if (!items || items.length === 0) {
-            return res
-                .status(400)
-                .json({ message: `No items found matching the query: ${query}` });
+            return res.status(200).json({
+                data: [],
+                message: "No items found",
+            });
         }
 
         return res.status(200).json({ data: items });

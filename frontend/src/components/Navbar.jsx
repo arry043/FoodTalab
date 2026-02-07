@@ -5,7 +5,12 @@ import { IoMdCart } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { IoClose } from "react-icons/io5";
 import axios from "axios";
-import { setUserData } from "../redux/userSlice";
+import {
+    setSearchItems,
+    setUserData,
+    setItemsInMyCity,
+    setIsSearching,
+} from "../redux/userSlice";
 import { serverUrl } from "../App";
 import { FaPlus } from "react-icons/fa";
 import { LuReceipt } from "react-icons/lu";
@@ -13,7 +18,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 const Navbar = () => {
-    const { userData, city, cartItems, myOrders } = useSelector(
+    const { userData, city, cartItems, myOrders, searchItems } = useSelector(
         (state) => state?.user,
     );
     const { myShopData } = useSelector((state) => state?.owner);
@@ -52,18 +57,24 @@ const Navbar = () => {
             );
 
             console.log("Search Results:", res.data.data);
+            dispatch(setSearchItems(res.data.data));
         } catch (error) {
             console.error("Error searching items:", error);
         }
     };
 
     useEffect(() => {
-        if (query.trim() !== "") {
-            handleSearchItems();
+        if (query.trim()) {
+            dispatch(setIsSearching(true));
+
+            const timer = setTimeout(() => {
+                handleSearchItems();
+            }, 100);
+
+            return () => clearTimeout(timer);
         } else {
-            // If query is empty, you might want to reset the search results or show default items
-            // For example, you could fetch all items in the city again
-            // handleFetchItemsByCity();
+            dispatch(setIsSearching(false));
+            dispatch(setSearchItems([]));
         }
     }, [query]);
 
@@ -96,6 +107,14 @@ const Navbar = () => {
                             type="text"
                             placeholder="Search delicious Food... 😋"
                         />
+                        {query && (
+                            <IoClose
+                                onClick={() => setQuery("")}
+                                size={40}
+                                title="Clear search"
+                                className="text-gray-800 cursor-pointer p-1.5 transition-all duration-200 hover:text-[#ff4d2d] hover:scale-110 hover:rotate-90"
+                            />
+                        )}
                     </div>
                 </div>
             )}
