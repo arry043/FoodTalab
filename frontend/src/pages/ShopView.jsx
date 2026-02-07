@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import {  useParams } from "react-router-dom";
 import { serverUrl } from "../App";
 import Navbar from "../components/Navbar";
 import FoodCard from "../components/FoodCard";
 import ShopHeader from "../components/ShopHeader";
 import OwnerCard from "../components/OwnerCard";
+
 
 function ShopView() {
     const { shopId } = useParams();
@@ -15,7 +16,8 @@ function ShopView() {
     const getShopById = async () => {
         try {
             const res = await axios.get(
-                `${serverUrl}/api/shop/get-shop-by-id/${shopId}`
+                `${serverUrl}/api/shop/get-shop-by-id/${shopId}`,
+                { withCredentials: true }
             );
             setShop(res.data.data);
             console.log("res: ", res.data.data);
@@ -43,9 +45,8 @@ function ShopView() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[#fff9f6] ">
             <Navbar />
-
             {/* SHOP HERO */}
             <ShopHeader shop={shop} />
 
