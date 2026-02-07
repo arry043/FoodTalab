@@ -7,6 +7,9 @@ import { useSelector } from "react-redux";
 import ShopsInMyCityCard from "./ShopsInMyCityCard.jsx";
 import FoodCard from "./FoodCard.jsx";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useEffect } from "react";
+import { useState } from "react";
 
 const UserDashboard = () => {
     // REDUX - getting user data
@@ -17,7 +20,7 @@ const UserDashboard = () => {
     // console.log(userData);
     // console.log("Shops: ", shopsInMyCity);
     const [selectedCategoryList, setSelectedCategoryList] =
-        React.useState(itemsInMyCity);
+        useState(itemsInMyCity);
 
     const handleFilterByCategory = (category) => {
         if (category === "All") {
@@ -149,8 +152,11 @@ const UserDashboard = () => {
                                 name={shop.name}
                                 image={shop.image}
                             />
-                        ))} 
-                    <div onClick={() => setSelectedCategoryList(itemsInMyCity)} className="flex flex-col items-center shrink-0 cursor-pointer group">
+                        ))}
+                    <div
+                        onClick={() => setSelectedCategoryList(itemsInMyCity)}
+                        className="flex flex-col items-center shrink-0 cursor-pointer group"
+                    >
                         <div
                             className="w-[90px] h-[90px] sm:w-[105px] sm:h-[105px] md:w-[120px] md:h-[120px]
                 rounded-xl overflow-hidden bg-white shadow-md

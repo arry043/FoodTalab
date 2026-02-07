@@ -10,9 +10,12 @@ import { serverUrl } from "../App";
 import { FaPlus } from "react-icons/fa";
 import { LuReceipt } from "react-icons/lu";
 import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const Navbar = () => {
-    const { userData, city, cartItems, myOrders } = useSelector((state) => state?.user);
+    const { userData, city, cartItems, myOrders } = useSelector(
+        (state) => state?.user,
+    );
     const { myShopData } = useSelector((state) => state?.owner);
     // console.log("myShopData: ",myShopData);
     const actualUserData = userData?.data;
@@ -25,9 +28,9 @@ const Navbar = () => {
 
     const handleLogout = async () => {
         const isConfirm = window.confirm("Are you sure you want to logout?");
-        if(!isConfirm){
-            setShowInfo((prev) => !prev)
-            return
+        if (!isConfirm) {
+            setShowInfo((prev) => !prev);
+            return;
         }
         try {
             await axios.get(`${serverUrl}/api/auth/signout`, {
@@ -39,13 +42,39 @@ const Navbar = () => {
         }
     };
 
+    // SEARCH FUNCTIONALITY
+    const [query, setQuery] = useState("");
+    const handleSearchItems = async () => {
+        try {
+            const res = await axios.get(
+                `${serverUrl}/api/item/search-items?query=${query}&city=${city}`,
+                { withCredentials: true },
+            );
 
+            console.log("Search Results:", res.data.data);
+        } catch (error) {
+            console.error("Error searching items:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (query.trim() !== "") {
+            handleSearchItems();
+        } else {
+            // If query is empty, you might want to reset the search results or show default items
+            // For example, you could fetch all items in the city again
+            // handleFetchItemsByCity();
+        }
+    }, [query]);
 
     return (
         <div
-            className={`w-full ${role === "deliveryBoy" ? "gap-30": ""} h-15 md:h-17 flex items-center justify-between md:justify-center gap-10 px-[20px] fixed top-0 z-[9999] bg-[#fff9f6] overflow-visible`}
+            className={`w-full ${role === "deliveryBoy" ? "gap-30" : ""} h-15 md:h-17 flex items-center justify-between md:justify-center gap-10 px-[20px] fixed top-0 z-[9999] bg-[#fff9f6] overflow-visible`}
         >
-            <h1 onClick={() => navigate("/")} className="text-3xl cursor-pointer font-bold mb-2 text-[#ff4d2d]">
+            <h1
+                onClick={() => navigate("/")}
+                className="text-3xl cursor-pointer font-bold mb-2 text-[#ff4d2d]"
+            >
                 FoodTalab
             </h1>
 
@@ -61,6 +90,8 @@ const Navbar = () => {
                     <div className="flex items-center w-full gap-2 px-[10px] py-2">
                         <FaSearch size={20} className="text-[#ff4d2d]" />
                         <input
+                            onChange={(e) => setQuery(e.target.value)}
+                            value={query}
                             className="w-full px-3 focus:outline-none"
                             type="text"
                             placeholder="Search delicious Food... 😋"
@@ -80,6 +111,8 @@ const Navbar = () => {
                             <IoClose size={25} className="text-[#ff4d2d]" />
                         ) : (
                             <FaSearch
+                                onChange={(e) => setQuery(e.target.value)}
+                                value={query}
                                 size={20}
                                 className="text-[#ff4d2d] md:hidden"
                             />
@@ -89,7 +122,10 @@ const Navbar = () => {
 
                 {/* ================= OWNER ADD FOOD BUTTON ================= */}
                 {role === "owner" && myShopData && (
-                    <button onClick={()=>navigate("/add-item")} className="cursor-pointer flex items-center w-10 h-10 md:w-auto md:h-auto hover:bg-[#ff4d2d]/5 px-3 py-1 rounded-full md:rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium">
+                    <button
+                        onClick={() => navigate("/add-item")}
+                        className="cursor-pointer flex items-center w-10 h-10 md:w-auto md:h-auto hover:bg-[#ff4d2d]/5 px-3 py-1 rounded-full md:rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium"
+                    >
                         <FaPlus size={18} />
                         <span className="ml-2 hidden md:inline">
                             Add Food Items
@@ -99,7 +135,10 @@ const Navbar = () => {
 
                 {/* ================= USER CART ================= */}
                 {role === "user" && (
-                    <div className="relative cursor-pointer" onClick={()=> navigate("/cart")}>
+                    <div
+                        className="relative cursor-pointer"
+                        onClick={() => navigate("/cart")}
+                    >
                         <IoMdCart size={25} className="text-[#ff4d2d]" />
                         <span className="absolute text-sm text-[#ff4d2d] left-3 bottom-4.5">
                             {cartItems?.length ? cartItems?.length : ""}
@@ -109,15 +148,21 @@ const Navbar = () => {
 
                 {/* ================= USER ORDERS BUTTON ================= */}
                 {role === "user" && (
-                    <button onClick={()=> navigate("/my-orders")} className="cursor-pointer hover:bg-[#ff4d2d]/5 hidden md:block px-3 py-1 rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium">
+                    <button
+                        onClick={() => navigate("/my-orders")}
+                        className="cursor-pointer hover:bg-[#ff4d2d]/5 hidden md:block px-3 py-1 rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium"
+                    >
                         Orders
-                    </button> 
+                    </button>
                 )}
 
                 {/* ================= OWNER ORDERS PENDING BUTTON ================= */}
                 {role === "owner" && (
                     <div className="relative">
-                        <button onClick={()=> navigate("/my-orders")} className="cursor-pointer flex items-center w-10 h-10 md:w-auto md:h-auto hover:bg-[#ff4d2d]/5 px-3 py-1 rounded-full md:rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium">
+                        <button
+                            onClick={() => navigate("/my-orders")}
+                            className="cursor-pointer flex items-center w-10 h-10 md:w-auto md:h-auto hover:bg-[#ff4d2d]/5 px-3 py-1 rounded-full md:rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium"
+                        >
                             <LuReceipt size={20} />
                             <span className="ml-2 hidden md:inline">
                                 Orders
@@ -143,7 +188,10 @@ const Navbar = () => {
                         <div className="text-sm font-semibold">
                             Hey.. {actualUserData.fullName}
                         </div>
-                        <div onClick={()=> navigate("/my-orders")} className="md:hidden font-semibold text-sm cursor-pointer hover:text-[#ff4d2d]">
+                        <div
+                            onClick={() => navigate("/my-orders")}
+                            className="md:hidden font-semibold text-sm cursor-pointer hover:text-[#ff4d2d]"
+                        >
                             My Orders
                         </div>
                         <div
@@ -170,6 +218,8 @@ const Navbar = () => {
                             </div>
                             <div className="flex items-center w-full gap-1 px-2 py-2">
                                 <FaSearch
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    value={query}
                                     size={20}
                                     className="text-[#ff4d2d]"
                                 />

@@ -156,3 +156,52 @@ export const getItemsByCity = async (req, res) => {
             .json({ message: "Server Error: getItemsByCity", error });
     }
 };
+
+export const searchItems = async (req, res) => {
+    try {
+        const { query, city } = req.query;
+    
+        if (!query || !city) {
+            return res
+                .status(400)
+                .json({ message: "Query and city are required for searching" });
+        }
+
+        const shops = await Shop.find({
+            city: { $regex: new RegExp(`${city}$`, "i") },
+        })
+            .populate("owner")
+            .populate({
+                path: "items",
+                options: { sort: { updatedAt: -1 } },
+            });
+
+        if (!shops || shops.length === 0) {
+            return res
+                .status(400)
+                .json({ message: `No shops found in the city: ${city}` });
+        }
+
+        const shopIds = shops.map((shop) => shop._id);
+        const items = await Item.find({
+            shop: { $in: shopIds },
+            $or: [
+                { name: { $regex: new RegExp(query, "i") } },
+                { description: { $regex: new RegExp(query, "i") } },
+                { category: { $regex: new RegExp(query, "i") } },
+            ],
+        }).populate("shop");
+
+        if (!items || items.length === 0) {
+            return res
+                .status(400)
+                .json({ message: `No items found matching the query: ${query}` });
+        }
+
+        return res.status(200).json({ data: items });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: "Server Error: searchItems", error });
+    }
+};
