@@ -160,7 +160,7 @@ function CheckOutPage() {
                 <h1 className="text-2xl font-bold mb-5">Checkout</h1>
 
                 {/* 📍 DELIVERY ADDRESS */}
-                <div className="bg-white rounded-xl shadow p-4 mb-5">
+                {/* <div className="bg-white rounded-xl shadow p-4 mb-5">
                     <h3 className="font-semibold mb-2">Delivery Address</h3>
                     <p className="text-sm text-gray-600">
                         {address || "Hostel / Home Address not set"}
@@ -173,7 +173,7 @@ function CheckOutPage() {
                     >
                         Change Address
                     </button>
-                </div>
+                </div> */}
 
                 {/* 📍 LOCATION PICKER */}
                 <div className="bg-white rounded-xl shadow p-4 mb-5">
