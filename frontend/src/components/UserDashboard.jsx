@@ -14,6 +14,26 @@ const UserDashboard = () => {
     );
     // console.log(userData);
     // console.log("Shops: ", shopsInMyCity);
+    const [selectedCategoryList, setSelectedCategoryList] =
+        React.useState(itemsInMyCity);
+
+    const handleFilterByCategory = (category) => {
+        if (category === "All") {
+            setSelectedCategoryList(itemsInMyCity);
+        } else {
+            const filteredItems = itemsInMyCity.filter(
+                (item) => item.category === category,
+            );
+            setSelectedCategoryList(filteredItems);
+        }
+    };
+
+    const handleFilterByShop = (shopId) => {
+        const filteredItems = itemsInMyCity.filter(
+            (item) => item?.shop === shopId,
+        );
+        setSelectedCategoryList(filteredItems);
+    };
 
     // SCROLL REFS
     const categoryScrollRef = useRef(null);
@@ -75,7 +95,13 @@ const UserDashboard = () => {
                     className="flex gap-10 overflow-x-auto scrollbar-hide scroll-smooth py-2"
                 >
                     {category.map((cate, index) => (
-                        <CategoryCard key={index} data={cate} />
+                        <CategoryCard
+                            key={index}
+                            data={cate}
+                            onClick={() =>
+                                handleFilterByCategory(cate.category)
+                            }
+                        />
                     ))}
                 </div>
             </div>
@@ -115,6 +141,7 @@ const UserDashboard = () => {
                         shopsInMyCity.length > 0 &&
                         shopsInMyCity.map((shop, index) => (
                             <ShopsInMyCityCard
+                                onClick={() => handleFilterByShop(shop._id)}
                                 key={shop._id || index}
                                 name={shop.name}
                                 image={shop.image}
@@ -129,9 +156,19 @@ const UserDashboard = () => {
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 place-items-stretch">
-                    {itemsInMyCity?.map((item, index) => (
-                        <FoodCard key={index} data={item} />
-                    ))}
+                    {selectedCategoryList && selectedCategoryList.length > 0 ? (
+                        selectedCategoryList.map((item, index) => (
+                            <FoodCard key={index} data={item} />
+                        ))
+                    ) : itemsInMyCity && itemsInMyCity.length > 0 ? (
+                        itemsInMyCity.map((item, index) => (
+                            <FoodCard key={index} data={item} />
+                        ))
+                    ) : (
+                        <p className="text-gray-500">
+                            No items available in your city.
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 import React from "react";
 
-function ShopsInMyCityCard({ name, image }) {
+function ShopsInMyCityCard({ name, image, onClick }) {
     return (
 //         <div className="relative flex flex-col items-center shrink-0 cursor-pointer group">
 
@@ -30,7 +30,7 @@ function ShopsInMyCityCard({ name, image }) {
 
 //         </div>
 
-        <div className="flex flex-col items-center shrink-0 cursor-pointer group">
+        <div onClick={onClick} className="flex flex-col items-center shrink-0 cursor-pointer group">
             <div
                 className="w-[90px] h-[90px] sm:w-[105px] sm:h-[105px] md:w-[120px] md:h-[120px]
                 rounded-xl overflow-hidden bg-white shadow-md
@@ -48,6 +48,6 @@ function ShopsInMyCityCard({ name, image }) {
             </p>
         </div>
     );
-}
+} 
 
 export default ShopsInMyCityCard;
