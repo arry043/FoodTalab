@@ -205,7 +205,7 @@ const Navbar = () => {
                 {showInfo && (
                     <div className="fixed top-20 right-15 md:right-[5%] lg:right-[20%] w-50 bg-white shadow-2xl rounded-xl p-5 flex flex-col gap-3 z-[9999]">
                         <div className="text-sm font-semibold">
-                            Hey.. {actualUserData.fullName}
+                            Hey...! {actualUserData.fullName}
                         </div>
                         <div
                             onClick={() => navigate("/my-orders")}
