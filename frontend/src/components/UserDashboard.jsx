@@ -84,7 +84,7 @@ const UserDashboard = () => {
             <div className="w-full max-w-7xl px-5 mt-10 md:mt-17 relative">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">
-                        {userData?.data?.fullName}, what's on your mind today?
+                        {userData?.data?.fullName}, what's in your mind today?
                         😋
                     </h2>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { serverUrl } from "../App";
@@ -9,6 +9,7 @@ import CustomerTracking from "../components/CustomerTracking";
 function TrackOrderPage() {
     const { orderId } = useParams();
     const [currentOrder, setCurrentOrder] = useState({});
+    const navigate = useNavigate();
     const handleGetOrder = async () => {
         try {
             const result = await axios.get(

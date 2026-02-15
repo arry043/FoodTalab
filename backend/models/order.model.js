@@ -103,6 +103,22 @@ const orderSchema = new mongoose.Schema(
         payableAmount: {
             type: Number,
         },
+        payment: {
+            type: Boolean,
+            default: false,
+        },
+        razorpayPaymentId: {
+            type: String,
+            default:"",
+        },
+        razorpayOrderId: {
+            type: String,
+            default:"",
+        },
+        razorpaySeceretId: {
+            type: String,
+            default:"",
+        },
     },
     { timestamps: true },
 );

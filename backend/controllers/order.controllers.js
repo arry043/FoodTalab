@@ -3,6 +3,15 @@ import Order from "../models/order.model.js";
 import Shop from "../models/shop.model.js";
 import User from "../models/user.model.js";
 import { sendOtpDelivery } from "../utils/mail.js";
+import Razorpay from "razorpay";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+let instance = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 export const placeOrder = async (req, res) => {
     // console.log("REQ USER:", req.user);
@@ -65,6 +74,41 @@ export const placeOrder = async (req, res) => {
 
         const payableAmount = totalAmount + delivaryFee;
 
+        if (paymentMethod === "ONLINE") {
+            const razorOrder = instance.orders.create({
+                amount: payableAmount * 100,
+                currency: "INR",
+                receipt: `receipt_${Date.now()}`,
+                notes: {
+                    userId: req.user?.userId,
+                },
+            });
+
+            const newOrder = await Order.create({
+                user: req.user?.userId,
+                payment: false,
+                paymentMethod: paymentMethod,
+                delivaryAddress: delivaryAddress,
+                totalAmount: totalAmount,
+                shopOrders: shopOrders,
+                delivaryFee: delivaryFee,
+                payableAmount: payableAmount,
+                razorpayOrderId: (await razorOrder)._id,
+                razorpaySignature: (await razorOrder).signature,
+            });
+
+            return res.status(201).json({
+                data: {
+                    orderId: newOrder._id,
+                    razorpayOrderId: (await razorOrder)._id,
+                    key_id: process.env.RAZORPAY_KEY_ID,
+                    amount: payableAmount * 100,
+                    currency: "INR",
+                },
+                message: "Order Placed Successfully, complete payment to proceed",
+            });
+        }
+
         const newOrder = await Order.create({
             user: req.user?.userId,
             paymentMethod: paymentMethod,
@@ -86,6 +130,8 @@ export const placeOrder = async (req, res) => {
             .json({ message: "Server Error: placeOrder", error });
     }
 };
+
+
 
 export const getMyOrders = async (req, res) => {
     try {
@@ -474,10 +520,10 @@ export const sendDeliveryOtp = async (req, res) => {
         if (!order || !shopOrder) {
             return res.status(404).json({ message: "Order not found" });
         }
-        console.log("-->",order);
-        console.log("---->",shopOrder);
+        console.log("-->", order);
+        console.log("---->", shopOrder);
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
-        console.log("otp-> ",otp);
+        console.log("otp-> ", otp);
         shopOrder.deliveryOtp = otp;
         shopOrder.otpExpires = Date.now() + 5 * 60 * 1000;
         await order.save();
