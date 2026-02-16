@@ -14,8 +14,6 @@ let instance = new Razorpay({
 });
 
 export const placeOrder = async (req, res) => {
-    // console.log("REQ USER:", req.user);
-    // console.log("REQ BODY:", req.body);
 
     try {
         const {
