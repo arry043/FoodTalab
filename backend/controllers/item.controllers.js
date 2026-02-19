@@ -54,6 +54,8 @@ export const editItem = async (req, res) => {
             image = await uploadOnCloudinary(req.file?.path);
         }
 
+        // console.log("Items: ",itemId)
+
         const updateData = {
             name,
             description,
