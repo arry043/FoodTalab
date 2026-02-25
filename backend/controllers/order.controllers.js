@@ -98,6 +98,7 @@ export const placeOrder = async (req, res) => {
             return res.status(201).json({
                 data: {
                     orderId: newOrder._id,
+                    newOrder,
                     razorpayOrderId: (await razorOrder)._id,
                     key_id: process.env.RAZORPAY_KEY_ID,
                     amount: payableAmount * 100,
