@@ -130,9 +130,33 @@ function OwnerOrderCard({ order, key }) {
                     </div>
                 </div>
 
-                {/* Status Badge */}
-                <div className="self-end md:self-auto">
-                    <span className="inline-block text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-medium">
+                {/* Status Badges */}
+                <div className="flex flex-col items-end gap-2 self-end md:self-auto">
+                    <div className="flex items-center gap-2">
+                        <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold border
+                        ${
+                            order?.paymentMethod === "COD"
+                                ? "bg-blue-100 text-blue-700 border-blue-200"
+                                : "bg-purple-100 text-purple-700 border-purple-200"
+                        }`}
+                        >
+                            {order?.paymentMethod === "COD"
+                                ? "💵 COD"
+                                : "💳 Online"}
+                        </span>
+                        <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold border
+                        ${
+                            order?.payment
+                                ? "bg-green-100 text-green-700 border-green-200"
+                                : "bg-red-100 text-red-700 border-red-200"
+                        }`}
+                        >
+                            {order?.payment ? "✅ Paid" : "⏳ Unpaid"}
+                        </span>
+                    </div>
+                    <span className="inline-block text-xs px-3 py-1 border border-yellow-200 rounded-full bg-yellow-100 text-yellow-700 font-medium">
                         {order?.shopOrders[0]?.status}
                     </span>
                 </div>

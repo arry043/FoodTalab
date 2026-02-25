@@ -112,11 +112,60 @@ function CheckOutPage() {
                     withCredentials: true,
                 },
             );
-            dispatch(addMyOrders(result.data.data)); 
-            console.log("order placed: ", result.data);
-            navigate("/order-placed");
+
+            if (paymentMethod === "COD") {
+                dispatch(addMyOrders(result.data.data));
+                console.log("order placed: ", result.data);
+                navigate("/order-placed");
+            } else {
+                const orderId = result.data.data.orderId;
+                const razorOrder = result.data.data.razorOrder;
+                // const razorpayOrderId = result.data.data.razorpayOrderId;
+                // const amount = result.data.data.amount;
+                // const currency = result.data.data.currency;
+                openRazorPayWindow(orderId, razorOrder);
+            }
         } catch (error) {
             console.log("place order error: ", error);
+        }
+    };
+
+    const openRazorPayWindow = async (orderId, razorOrder) => {
+        try {
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: razorOrder.amount,
+                currency: razorOrder.currency,
+                name: "Food Talab",
+                description: "Order ID: " + orderId,
+                order_id: razorOrder.id,
+                image: "https://example.com/logo.png",
+                handler: async function (response) {
+                    try {
+                        const result = await axios.post(
+                            `${serverUrl}/api/order/verify-payment`,
+                            {
+                                razorpayOrderId: razorOrder.id,
+                                razorpay_payment_id:
+                                    response.razorpay_payment_id,
+                                orderId: orderId,
+                            },
+                            {
+                                withCredentials: true,
+                            },
+                        );
+                        console.log("Payment verified: ", result.data);
+                        dispatch(addMyOrders(result.data.data));
+                        navigate("/order-placed");
+                    } catch (error) {
+                        console.log("Payment verification error: ", error);
+                    }
+                },
+            };
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        } catch (error) {
+            console.log("razorpay error: ", error);
         }
     };
 
@@ -213,15 +262,13 @@ function CheckOutPage() {
 
                     {loadingSuggest && (
                         <p className="text-xs text-gray-400 mt-1">
+                            {" "}
                             Searching...
                         </p>
                     )}
                     {/* 🔽 SUGGESTION DROPDOWN */}
                     {showSuggestions && suggestions.length > 0 && (
-                        <ul
-                            className="mt-2 bg-white rounded-xl shadow-lg border border-gray-100
-    max-h-64 overflow-y-auto text-sm divide-y"
-                        >
+                        <ul className="mt-2 bg-white rounded-xl shadow-lg border border-gray-100 max-h-64 overflow-y-auto text-sm divide-y">
                             {suggestions.map((item, index) => (
                                 <li
                                     key={index}

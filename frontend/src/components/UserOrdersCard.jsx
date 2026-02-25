@@ -59,19 +59,31 @@ function UserOrdersCard({ order, index }) {
                         {formatOrderTime(order?.createdAt)}
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold border
-                    ${
-                        order?.paymentMethod === "COD"
-                            ? "bg-blue-100 text-blue-700 border-blue-200"
-                            : "bg-green-100 text-green-700 border-green-200"
-                    }`}
-                    >
-                        {order?.paymentMethod === "COD"
-                            ? "💵 Cash on Delivery"
-                            : "💳 Online Paid"}
-                    </span>
+                <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-2">
+                        <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold border
+                        ${
+                            order?.paymentMethod === "COD"
+                                ? "bg-blue-100 text-blue-700 border-blue-200"
+                                : "bg-purple-100 text-purple-700 border-purple-200"
+                        }`}
+                        >
+                            {order?.paymentMethod === "COD"
+                                ? "💵 COD"
+                                : "💳 Online"}
+                        </span>
+                        <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold border
+                        ${
+                            order?.payment
+                                ? "bg-green-100 text-green-700 border-green-200"
+                                : "bg-red-100 text-red-700 border-red-200"
+                        }`}
+                        >
+                            {order?.payment ? "✅ Paid" : "⏳ Unpaid"}
+                        </span>
+                    </div>
                 </div>
             </div>
             {/* Divider */}
@@ -177,10 +189,16 @@ function UserOrdersCard({ order, index }) {
 
             {/* Action Buttons */}
             <div className="mt-4 flex gap-3">
-                <button onClick={()=> navigate(`/track-order/${order?._id}`)} className="flex-1 py-2 text-sm rounded-xl border border-[#ff4d2d] text-[#ff4d2d] hover:bg-[#ff4d2d] hover:text-white transition">
+                <button
+                    onClick={() => navigate(`/track-order/${order?._id}`)}
+                    className="flex-1 py-2 text-sm rounded-xl border border-[#ff4d2d] text-[#ff4d2d] hover:bg-[#ff4d2d] hover:text-white transition"
+                >
                     Track Order
                 </button>
-                <button onClick={()=> navigate("/")}  className="flex-1 py-2 text-sm rounded-xl bg-[#ff4d2d] text-white hover:bg-[#e64427] transition">
+                <button
+                    onClick={() => navigate("/")}
+                    className="flex-1 py-2 text-sm rounded-xl bg-[#ff4d2d] text-white hover:bg-[#e64427] transition"
+                >
                     Reorder
                 </button>
             </div>

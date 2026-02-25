@@ -14,7 +14,6 @@ let instance = new Razorpay({
 });
 
 export const placeOrder = async (req, res) => {
-
     try {
         const {
             cartItems,
@@ -39,7 +38,8 @@ export const placeOrder = async (req, res) => {
         const groupItemsByShop = {};
 
         cartItems.forEach((item) => {
-            const shopId = item.shop;
+            const shopId =
+                typeof item.shop === "object" ? item.shop._id : item.shop;
             if (!groupItemsByShop[shopId]) {
                 groupItemsByShop[shopId] = [];
             }
@@ -61,7 +61,7 @@ export const placeOrder = async (req, res) => {
                     owner: shop.owner?._id,
                     subTotal: subTotal,
                     shopOrderItems: items.map((item) => ({
-                        item: item.id,
+                        item: item.id || item._id, // Support both id and _id from frontend
                         name: item.name,
                         price: item.price,
                         quantity: item.quantity,
@@ -73,7 +73,7 @@ export const placeOrder = async (req, res) => {
         const payableAmount = totalAmount + delivaryFee;
 
         if (paymentMethod === "ONLINE") {
-            const razorOrder = instance.orders.create({
+            const razorOrder = await instance.orders.create({
                 amount: payableAmount * 100,
                 currency: "INR",
                 receipt: `receipt_${Date.now()}`,
@@ -91,20 +91,19 @@ export const placeOrder = async (req, res) => {
                 shopOrders: shopOrders,
                 delivaryFee: delivaryFee,
                 payableAmount: payableAmount,
-                razorpayOrderId: (await razorOrder)._id,
-                razorpaySignature: (await razorOrder).signature,
+                razorpayOrderId: razorOrder.id,
             });
 
             return res.status(201).json({
                 data: {
                     orderId: newOrder._id,
-                    newOrder,
-                    razorpayOrderId: (await razorOrder)._id,
-                    key_id: process.env.RAZORPAY_KEY_ID,
+                    razorOrder,
+                    razorpayOrderId: razorOrder.id,
                     amount: payableAmount * 100,
                     currency: "INR",
                 },
-                message: "Order Placed Successfully, complete payment to proceed",
+                message:
+                    "Order Placed Successfully, complete payment to proceed",
             });
         }
 
@@ -130,7 +129,34 @@ export const placeOrder = async (req, res) => {
     }
 };
 
+export const verifyPayment = async (req, res) => {
+    try {
+        const { orderId, razorpay_payment_id } = req.body;
+        const payment = await instance.payments.fetch(razorpay_payment_id);
+        if (!payment || payment.status !== "captured") {
+            return res.status(400).json({ message: "Payment not completed" });
+        }
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+        order.payment = true;
+        order.razorpayPaymentId = razorpay_payment_id;
+        await order.save();
 
+        await order.populate(
+            "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
+        );
+
+        return res
+            .status(200)
+            .json({ data: order, message: "Payment verified successfully" });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: "Server Error: verifyPayment", error });
+    }
+};
 
 export const getMyOrders = async (req, res) => {
     try {
