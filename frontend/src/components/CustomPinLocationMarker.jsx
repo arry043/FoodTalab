@@ -8,7 +8,7 @@ export const CustomPinLocationMarker = new L.DivIcon({
             <MdLocationPin size={35} className="text-blue-500" />
         </div>
     ),
-    className: "", // important: default leaflet styles hata deta hai
+    className: "", // important: default leaflet styles hata deta
     iconSize: [40, 40],
     iconAnchor: [20, 40], // bottom center point
 });
