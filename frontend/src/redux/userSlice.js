@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+
 const userSlice = createSlice({
     name: "user",
     initialState: {
@@ -16,6 +17,7 @@ const userSlice = createSlice({
         myOrders: [],
         searchItems: [],
         isSearching: false,
+        socket: null,
     },
     reducers: {
         setUserData: (state, action) => {
@@ -110,6 +112,9 @@ const userSlice = createSlice({
         setIsSearching: (state, action) => {
             state.isSearching = action.payload;
         },
+        setSocket: (state, action) => {
+            state.socket = action.payload;
+        }
     },
 });
 
@@ -130,5 +135,6 @@ export const {
     updateOrderStatus,
     setSearchItems,
     setIsSearching,
+    setSocket,
 } = userSlice.actions;
 export default userSlice.reducer;

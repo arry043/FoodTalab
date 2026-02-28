@@ -8,11 +8,23 @@ import userRouter from "./routes/user.routes.js";
 import shopRouter from "./routes/shop.routes.js";
 import itemRouter from "./routes/item.routes.js";
 import orderRouter from "./routes/order.routes.js";
-
-
 dotenv.config();
+import http from "http";
+import { Server } from "socket.io";
+import { socketHandler } from "./socket.js";
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: process.env.FRONTEND_ORIGIN, // http://localhost:5173
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+        credentials: true
+    }
+})
+
+app.set("io", io); // Make io accessible in routes via req.app.get("io")
+
 const PORT = process.env.PORT;
 
 // middleware
@@ -31,8 +43,11 @@ app.use("/api/item", itemRouter);
 app.use("/api/order", orderRouter); 
 
 
+
+// socket handler
+socketHandler(io);
 // server start
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     connectDB();
     console.log(`Server started on port ${PORT}`);
 });

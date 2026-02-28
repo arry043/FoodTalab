@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { setMyShopData } from "../redux/ownerSlice";
 import { serverUrl } from "../App";
 
-function OwnerItemCard({ key, data }) {
+function OwnerItemCard({ data }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -30,10 +30,7 @@ function OwnerItemCard({ key, data }) {
     };
 
     return (
-        <div
-            key={key}
-            className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-orange-100 flex flex-col sm:flex-row"
-        >
+        <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-orange-100 flex flex-col sm:flex-row">
             {/* IMAGE */}
             <div className="w-full sm:w-48 h-48 sm:h-auto overflow-hidden">
                 <img

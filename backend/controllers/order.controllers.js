@@ -116,9 +116,32 @@ export const placeOrder = async (req, res) => {
             delivaryFee: delivaryFee,
             payableAmount: payableAmount,
         });
+
+        // ONLY EMIT FOR COD HERE. Online orders emit in verifyPayment
         await newOrder.populate(
             "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
         );
+
+        // Socket notification to shop owner about new order
+        const io = req.app.get("io");
+        if (io) {
+            const orderObject = newOrder.toObject();
+            orderObject.shopOrders.forEach((shopOrder) => {
+                const ownerSocketId = shopOrder.owner?.socketId;
+
+                if (ownerSocketId) {
+                    const filteredOrderForOwner = {
+                        ...orderObject,
+                        shopOrders: shopOrder, // EMIT THE SINGLE SHOP ORDER DIRECTLY
+                    };
+
+                    io.to(ownerSocketId).emit("newOrder", {
+                        data: filteredOrderForOwner,
+                        message: "You have a new order!",
+                    });
+                }
+            });
+        }
         return res
             .status(201)
             .json({ data: newOrder, message: "Order Placed Successfully" });
@@ -147,6 +170,27 @@ export const verifyPayment = async (req, res) => {
         await order.populate(
             "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
         );
+
+        // Socket notification to shop owner about new Paid online order
+        const io = req.app.get("io");
+        if (io) {
+            const orderObject = order.toObject();
+            orderObject.shopOrders.forEach((shopOrder) => {
+                const ownerSocketId = shopOrder.owner?.socketId;
+
+                if (ownerSocketId) {
+                    const filteredOrderForOwner = {
+                        ...orderObject,
+                        shopOrders: shopOrder, // EMIT THE SINGLE SHOP ORDER DIRECTLY
+                    };
+
+                    io.to(ownerSocketId).emit("newOrder", {
+                        data: filteredOrderForOwner,
+                        message: "You have a new Paid Online Order!",
+                    });
+                }
+            });
+        }
 
         return res
             .status(200)
@@ -320,6 +364,17 @@ export const updateOrderStatus = async (req, res) => {
         const updatedShopOrder = populatedOrder.shopOrders.find(
             (so) => so.shop?._id?.toString() === shopId,
         );
+
+        // ✅ Socket Real-Time Status Update to Customer
+        const io = req.app.get("io");
+        if (io && order.user?._id) {
+            io.to(order.user._id.toString()).emit("orderStatusUpdate", {
+                orderId: order._id,
+                shopId: shopId,
+                status: status,
+                message: `Your order status from ${updatedShopOrder?.shop?.name || "the shop"} has changed to ${status}`,
+            });
+        }
 
         return res.status(200).json({
             shopOrder: updatedShopOrder,

@@ -1,14 +1,42 @@
+import React, { useEffect } from "react";
 import Navbar from "../components/Navbar";
 import UserOrdersCard from "../components/UserOrdersCard";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import OwnerOrderCard from "../components/OwnerOrderCard";
 import { IoFastFoodOutline } from "react-icons/io5";
+import { setMyOrders } from "../redux/userSlice";
 
 function MyOrders() {
     const navigate = useNavigate();
-    const { userData, myOrders } = useSelector((state) => state.user);
+    const { userData, myOrders, socket } = useSelector((state) => state.user);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        socket.on("newOrder", (response) => {
+            console.log("SOCKET NEW ORDER DATA:", response);
+            // The backend emits { data: filteredOrderForOwner, message: ... }
+            const newOrderData = response.data;
+
+            // Check if this new order belongs to the current owner
+            if (
+                newOrderData?.shopOrders?.owner?._id === userData?.data?._id ||
+                newOrderData?.shopOrders?.owner === userData?.data?._id
+            ) {
+                // OwnerOrderCard expects shopOrders as an array of shopOrder objects
+                const formattedOrder = {
+                    ...newOrderData,
+                    shopOrders: [newOrderData.shopOrders],
+                };
+                dispatch(setMyOrders([formattedOrder, ...myOrders]));
+            }
+        });
+        return () => {
+            socket?.off("newOrder");
+        };
+    }, [socket]);
+
     return (
         <div className="min-h-screen w-full bg-[#fff9f6] flex justify-center">
             <Navbar />
@@ -72,7 +100,7 @@ function MyOrders() {
                         </div>
                     </div>
                 )}
-                
+
                 {/* OWNER ORDERS */}
                 {userData.data.role === "owner" && (
                     <div>
@@ -102,7 +130,9 @@ function MyOrders() {
                                     </h2>
 
                                     <p className="text-sm text-gray-500 mt-1 max-w-xs">
-                                        Looks like no orders have been placed to your shop yet. Start accepting orders and satisfy your cravings 😋
+                                        Looks like no orders have been placed to
+                                        your shop yet. Start accepting orders
+                                        and satisfy your cravings 😋
                                     </p>
 
                                     {userData.data.role === "user" && (
