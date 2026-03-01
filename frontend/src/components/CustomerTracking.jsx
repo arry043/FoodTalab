@@ -10,6 +10,7 @@ import {
     useMap,
     Polyline,
 } from "react-leaflet";
+import { useEffect } from "react";
 
 const deliveryBoyIcon = new L.Icon({
     iconUrl: scooter,
@@ -35,6 +36,16 @@ function CustomerTracking({ data }) {
     ];
 
     const center = [deliveryBoyLat, deliveryBoyLon];
+
+    function RecenterMap({ lat, lng }) {
+        const map = useMap();
+        useEffect(() => {
+            if (lat && lng) {
+                map.setView([lat, lng]);
+            }
+        }, [lat, lng, map]);
+        return null;
+    }
 
     return (
         <div className="w-full h-[400px] mt-5 rounded-xl overflow-hidden shadow-md">
@@ -62,6 +73,7 @@ function CustomerTracking({ data }) {
                 </Marker>
 
                 <Polyline pathOptions={{ color: "blue" }} positions={path} />
+                <RecenterMap lat={deliveryBoyLat} lng={deliveryBoyLon} />
             </MapContainer>
         </div>
     );

@@ -2,7 +2,15 @@ import scooter from "../assets/delivery_scooter.png";
 import home from "../assets/customer_house.png";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
+import {
+    MapContainer,
+    TileLayer,
+    Marker,
+    Popup,
+    useMap,
+    Polyline,
+} from "react-leaflet";
+import { useEffect } from "react";
 
 const deliveryBoyIcon = new L.Icon({
     iconUrl: scooter,
@@ -16,11 +24,16 @@ const customerIcon = new L.Icon({
     iconAnchor: [25, 50],
 });
 
-function DeliveryBoyTracking({ data }) {
-    const deliveryBoyLat = data?.deliveryBoy?.location?.coordinates[1];
-    const deliveryBoyLon = data?.deliveryBoy?.location?.coordinates[0];
+function DeliveryBoyTracking({ data, liveLocation }) {
+    const deliveryBoyLat =
+        liveLocation?.lat || data?.deliveryBoy?.location?.coordinates[1];
+    const deliveryBoyLon =
+        liveLocation?.lng || data?.deliveryBoy?.location?.coordinates[0];
     const customerLat = data?.deliveryAddress?.lattitude;
     const customerLon = data?.deliveryAddress?.longitude;
+
+    if (!deliveryBoyLat || !deliveryBoyLon || !customerLat || !customerLon)
+        return null;
 
     const path = [
         [deliveryBoyLat, deliveryBoyLon],
@@ -28,6 +41,16 @@ function DeliveryBoyTracking({ data }) {
     ];
 
     const center = [deliveryBoyLat, deliveryBoyLon];
+
+    function RecenterMap({ lat, lng }) {
+        const map = useMap();
+        useEffect(() => {
+            if (lat && lng) {
+                map.setView([lat, lng]);
+            }
+        }, [lat, lng, map]);
+        return null;
+    }
 
     return (
         <div className="w-full h-[400px] mt-5 rounded-xl overflow-hidden shadow-md">
@@ -41,14 +64,21 @@ function DeliveryBoyTracking({ data }) {
                     attribution="&copy; OpenStreetMap contributors"
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <Marker position={[deliveryBoyLat, deliveryBoyLon]} icon={deliveryBoyIcon}>
+                <Marker
+                    position={[deliveryBoyLat, deliveryBoyLon]}
+                    icon={deliveryBoyIcon}
+                >
                     <Popup>Delivery Boy</Popup>
                 </Marker>
-                <Marker position={[customerLat, customerLon]} icon={customerIcon}>
+                <Marker
+                    position={[customerLat, customerLon]}
+                    icon={customerIcon}
+                >
                     <Popup>Customer</Popup>
                 </Marker>
 
                 <Polyline pathOptions={{ color: "blue" }} positions={path} />
+                <RecenterMap lat={deliveryBoyLat} lng={deliveryBoyLon} />
             </MapContainer>
         </div>
     );

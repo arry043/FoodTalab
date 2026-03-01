@@ -19,7 +19,38 @@ const DelivaryManDashboard = () => {
     const [otp, setOtp] = React.useState("");
     const [isSendingOtp, setIsSendingOtp] = React.useState(false);
     const [isDelivering, setIsDelivering] = React.useState(false);
+    const [liveLocation, setLiveLocation] = React.useState(null);
     const navigate = useNavigate();
+
+    // update delivery boy location every each second
+    useEffect(() => {
+        if (!socket || userData?.data?.role !== "deliveryBoy") return;
+        let watchId;
+        if (navigator.geolocation) {
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    setLiveLocation({ lat: latitude, lng: longitude });
+                    socket.emit("updateLocation", {
+                        latitude,
+                        longitude,
+                        userId: userData?.data?._id,
+                    });
+                },
+                (error) => {
+                    console.log("Error getting location:", error);
+                },
+                {
+                    enableHighAccuracy: true,
+                    // maximumAge: 10000,
+                    // timeout: 5000,
+                },
+            );
+        }
+        return () => {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+        };
+    }, [socket, userData]);
 
     const getAssignments = async () => {
         try {
@@ -439,7 +470,10 @@ const DelivaryManDashboard = () => {
                         </div>
 
                         {/* Delivery Boy Tracking */}
-                        <DeliveryBoyTracking data={currentOrder} />
+                        <DeliveryBoyTracking
+                            data={currentOrder}
+                            liveLocation={liveLocation}
+                        />
 
                         {/* Action Section */}
                         <div className="mt-5 bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5">

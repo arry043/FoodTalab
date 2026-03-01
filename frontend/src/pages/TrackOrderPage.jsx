@@ -5,10 +5,13 @@ import { IoIosArrowRoundBack } from "react-icons/io";
 import { serverUrl } from "../App";
 import DeliveryBoyTracking from "../components/DeliveryBoyTracking";
 import CustomerTracking from "../components/CustomerTracking";
+import { useSelector } from "react-redux";
 
 function TrackOrderPage() {
     const { orderId } = useParams();
     const [currentOrder, setCurrentOrder] = useState({});
+    const [liveLocations, setLiveLocations] = useState({});
+    const { socket } = useSelector((state) => state.user);
     const navigate = useNavigate();
     const handleGetOrder = async () => {
         try {
@@ -24,6 +27,18 @@ function TrackOrderPage() {
             console.log("get my orders Error:", error);
         }
     };
+
+    useEffect(() => {
+        socket?.on(
+            "updateDeliveryLocation",
+            ({ deliveryBoyId, latitude, longitude }) => {
+                setLiveLocations((prev) => ({
+                    ...prev,
+                    [deliveryBoyId]: { lat: latitude, lng: longitude },
+                }));
+            },
+        );
+    }, [socket]);
 
     useEffect(() => {
         handleGetOrder();
@@ -161,7 +176,7 @@ function TrackOrderPage() {
                                                     }
                                                 </p>
                                                 <p className="text-xs text-gray-500">
-                                                    { 
+                                                    {
                                                         shopOrder
                                                             .assignedDeliveryBoy
                                                             .mobile
@@ -181,16 +196,21 @@ function TrackOrderPage() {
                                         <div className="mt-2 overflow-hidden rounded-2xl">
                                             <CustomerTracking
                                                 data={{
-                                                    deliveryBoyLocation: {
-                                                        lat: shopOrder
-                                                            .assignedDeliveryBoy
-                                                            .location
-                                                            .coordinates[1],
-                                                        lng: shopOrder
-                                                            .assignedDeliveryBoy
-                                                            .location
-                                                            .coordinates[0],
-                                                    },
+                                                    deliveryBoyLocation:
+                                                        liveLocations[
+                                                            shopOrder
+                                                                .assignedDeliveryBoy
+                                                                ._id
+                                                        ] || {
+                                                            lat: shopOrder
+                                                                .assignedDeliveryBoy
+                                                                .location
+                                                                .coordinates[1],
+                                                            lng: shopOrder
+                                                                .assignedDeliveryBoy
+                                                                .location
+                                                                .coordinates[0],
+                                                        },
                                                     customerLocation: {
                                                         lat: currentOrder
                                                             ?.delivaryAddress
