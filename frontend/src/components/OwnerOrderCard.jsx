@@ -148,12 +148,16 @@ function OwnerOrderCard({ order, key }) {
                         <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold border
                         ${
-                            order?.payment
+                            order?.payment ||
+                            order?.shopOrders[0]?.status === "delivered"
                                 ? "bg-green-100 text-green-700 border-green-200"
                                 : "bg-red-100 text-red-700 border-red-200"
                         }`}
                         >
-                            {order?.payment ? "✅ Paid" : "⏳ Unpaid"}
+                            {order?.payment ||
+                            order?.shopOrders[0]?.status === "delivered"
+                                ? "✅ Paid"
+                                : "⏳ Unpaid"}
                         </span>
                     </div>
                     <span className="inline-block text-xs px-3 py-1 border border-yellow-200 rounded-full bg-yellow-100 text-yellow-700 font-medium">
@@ -214,32 +218,35 @@ function OwnerOrderCard({ order, key }) {
             </div>
 
             {/* Action Buttons */}
+            {/* Status Control - Hide if Delivered */}
+            {order?.shopOrders[0]?.status !== "delivered" && (
+                <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <span>Change Status:</span>
+                        <select
+                            value={order?.shopOrders[0]?.status}
+                            onChange={(e) =>
+                                handleUpdateStatus(
+                                    order?._id,
+                                    order?.shopOrders[0]?.shop?._id,
+                                    e.target.value,
+                                )
+                            }
+                            className="px-3 py-2 rounded-xl border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4d2d]"
+                        >
+                            <option value="pending">Pending</option>
+                            <option value="preparing">Preparing</option>
+                            <option value="outForDelivery">
+                                Out for Delivery
+                            </option>
+                        </select>
+                    </div>
 
-            {/* Status Control */}
-            <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <span>Change Status:</span>
-                    <select
-                        value={order?.shopOrders[0]?.status}
-                        onChange={(e) =>
-                            handleUpdateStatus(
-                                order?._id,
-                                order?.shopOrders[0]?.shop?._id,
-                                e.target.value,
-                            )
-                        }
-                        className="px-3 py-2 rounded-xl border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4d2d]"
-                    >
-                        <option value="pending">Pending</option>
-                        <option value="preparing">Preparing</option>
-                        <option value="outForDelivery">Out for Delivery</option>
-                    </select>
+                    <button className="px-5 py-2 rounded-xl bg-[#ff4d2d] text-white text-sm hover:bg-[#e64427] transition">
+                        Cancel
+                    </button>
                 </div>
-
-                <button className="px-5 py-2 rounded-xl bg-[#ff4d2d] text-white text-sm hover:bg-[#e64427] transition">
-                    Cancel
-                </button>
-            </div>
+            )}
 
             {/* Delivery Boys Section */}
             {order?.shopOrders[0]?.status === "outForDelivery" && (

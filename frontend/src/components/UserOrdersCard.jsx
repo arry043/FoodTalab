@@ -81,7 +81,12 @@ function UserOrdersCard({ order, index }) {
                                 : "bg-red-100 text-red-700 border-red-200"
                         }`}
                         >
-                            {order?.payment ? "✅ Paid" : "⏳ Unpaid"}
+                            {order?.payment ||
+                            order?.shopOrders?.some(
+                                (so) => so.status === "delivered",
+                            )
+                                ? "✅ Paid"
+                                : "⏳ Unpaid"}
                         </span>
                     </div>
                 </div>
@@ -189,12 +194,17 @@ function UserOrdersCard({ order, index }) {
 
             {/* Action Buttons */}
             <div className="mt-4 flex gap-3">
-                <button
-                    onClick={() => navigate(`/track-order/${order?._id}`)}
-                    className="flex-1 py-2 text-sm rounded-xl border border-[#ff4d2d] text-[#ff4d2d] hover:bg-[#ff4d2d] hover:text-white transition"
-                >
-                    Track Order
-                </button>
+                {/* Only show Track Order if not fully delivered */}
+                {!order?.shopOrders?.every(
+                    (so) => so.status === "delivered",
+                ) && (
+                    <button
+                        onClick={() => navigate(`/track-order/${order?._id}`)}
+                        className="flex-1 py-2 text-sm rounded-xl border border-[#ff4d2d] text-[#ff4d2d] hover:bg-[#ff4d2d] hover:text-white transition"
+                    >
+                        Track Order
+                    </button>
+                )}
                 <button
                     onClick={() => navigate("/")}
                     className="flex-1 py-2 text-sm rounded-xl bg-[#ff4d2d] text-white hover:bg-[#e64427] transition"

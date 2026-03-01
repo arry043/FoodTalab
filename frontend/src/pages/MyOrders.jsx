@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import OwnerOrderCard from "../components/OwnerOrderCard";
+import DeliveryBoyOrderCard from "../components/DeliveryBoyOrderCard";
 import { IoFastFoodOutline } from "react-icons/io5";
 import { setMyOrders } from "../redux/userSlice";
 
@@ -148,6 +149,58 @@ function MyOrders() {
 
                             {myOrders.map((order, index) => (
                                 <OwnerOrderCard key={index} order={order} />
+                            ))}
+                        </div>
+                    </div>
+                )}
+                {userData.data.role === "deliveryBoy" && (
+                    <div>
+                        {/* Page Header */}
+                        <div className="w-full max-w-6xl px-4 mb-6">
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+                                Delivery History 📦
+                            </h1>
+                            <p className="text-sm text-gray-500 mt-1">
+                                Keep track of all your successfully delivered
+                                orders
+                            </p>
+                        </div>
+
+                        {/* Orders List */}
+                        <div className="w-full max-w-6xl px-4 pb-10 grid gap-5">
+                            {myOrders.length === 0 && (
+                                <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-8 flex flex-col items-center justify-center text-center shadow-sm">
+                                    <div className="bg-[#fff1ec] p-4 rounded-full mb-4">
+                                        <IoFastFoodOutline
+                                            className="text-[#ff4d2d]"
+                                            size={40}
+                                        />
+                                    </div>
+
+                                    <h2 className="text-lg font-semibold text-gray-700">
+                                        No Deliveries Yet
+                                    </h2>
+
+                                    <p className="text-sm text-gray-500 mt-1 max-w-xs">
+                                        Looks like you haven’t completed any
+                                        deliveries yet. Head to the dashboard to
+                                        find available orders 🚚
+                                    </p>
+
+                                    <button
+                                        onClick={() => navigate("/")}
+                                        className="mt-5 px-6 py-2 rounded-xl bg-[#ff4d2d] text-white text-sm hover:bg-[#e64427] transition"
+                                    >
+                                        Go to Dashboard
+                                    </button>
+                                </div>
+                            )}
+
+                            {myOrders.map((order, index) => (
+                                <DeliveryBoyOrderCard
+                                    key={index}
+                                    order={order}
+                                />
                             ))}
                         </div>
                     </div>

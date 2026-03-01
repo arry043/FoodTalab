@@ -246,6 +246,29 @@ export const getMyOrders = async (req, res) => {
                     shopOrders: filteredShopOrders,
                 };
             });
+        } else if (role === "deliveryBoy") {
+            // ✅ get delivery boy's orders (history)
+            const allOrders = await Order.find({
+                "shopOrders.assignedDeliveryBoy": userId,
+            })
+                .sort({ createdAt: -1 })
+                .populate(
+                    "user shopOrders.owner shopOrders.shop shopOrders.shopOrderItems.item",
+                )
+                .populate("shopOrders.assignedDeliveryBoy");
+
+            orders = allOrders.map((order) => {
+                const filteredShopOrders = order.shopOrders.filter(
+                    (so) =>
+                        so.assignedDeliveryBoy?._id?.toString() ===
+                        userId.toString(),
+                );
+
+                return {
+                    ...order.toObject(),
+                    shopOrders: filteredShopOrders,
+                };
+            });
         }
 
         res.status(200).json({
@@ -373,6 +396,20 @@ export const updateOrderStatus = async (req, res) => {
                 shopId: shopId,
                 status: status,
                 message: `Your order status from ${updatedShopOrder?.shop?.name || "the shop"} has changed to ${status}`,
+            });
+        }
+
+        // ✅ Socket Real-Time Assignment Update to Delivery Boys
+        if (
+            io &&
+            status === "outForDelivery" &&
+            deliveryBoysPayload.length > 0
+        ) {
+            deliveryBoysPayload.forEach((db) => {
+                io.to(db.id.toString()).emit("newDeliveryAssignment", {
+                    message: "New delivery assignment available near you!",
+                    assignmentId: updatedShopOrder?.assignment,
+                });
             });
         }
 
@@ -645,6 +682,44 @@ export const verifyDeliveryOtp = async (req, res) => {
             shopOrder: shopOrder._id,
             assignTo: shopOrder.assignedDeliveryBoy,
         });
+
+        // ✅ Socket Real-Time Status Update to Customer, Owner, and DBoy
+        const io = req.app.get("io");
+        if (io) {
+            const eventPayload = {
+                orderId: order._id,
+                shopOrderId: shopOrder._id,
+                status: "delivered",
+                message: "Order has been delivered successfully!",
+            };
+
+            // Notify Customer
+            if (order.user?._id) {
+                io.to(order.user._id.toString()).emit(
+                    "orderDelivered",
+                    eventPayload,
+                );
+            }
+
+            // Notify Shop Owner
+            if (shopOrder.owner) {
+                const ownerId =
+                    typeof shopOrder.owner === "object"
+                        ? shopOrder.owner._id
+                        : shopOrder.owner;
+                io.to(ownerId.toString()).emit("orderDelivered", eventPayload);
+            }
+
+            // Notify Delivery Boy
+            if (shopOrder.assignedDeliveryBoy) {
+                const dboyId =
+                    typeof shopOrder.assignedDeliveryBoy === "object"
+                        ? shopOrder.assignedDeliveryBoy._id
+                        : shopOrder.assignedDeliveryBoy;
+                io.to(dboyId.toString()).emit("orderDelivered", eventPayload);
+            }
+        }
+
         return res
             .status(200)
             .json({ message: "Order delivered successfully" });

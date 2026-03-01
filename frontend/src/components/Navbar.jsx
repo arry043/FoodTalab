@@ -189,7 +189,13 @@ const Navbar = () => {
                         </button>
 
                         <span className="absolute top-[-6px] right-[-6px] bg-[#ff4d2d] text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                            {myOrders.length}
+                            {
+                                myOrders.filter(
+                                    (o) =>
+                                        o?.shopOrders?.[0]?.status !==
+                                        "delivered",
+                                ).length
+                            }
                         </span>
                     </div>
                 )}

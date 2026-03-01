@@ -7,15 +7,19 @@ import axios from "axios";
 import { useEffect } from "react";
 import { serverUrl } from "../App";
 import DeliveryBoyTracking from "./DeliveryBoyTracking";
+import { useNavigate } from "react-router-dom";
 
 const DelivaryManDashboard = () => {
-    const { userData } = useSelector((state) => state.user);
+    const { userData, socket } = useSelector((state) => state.user);
     const actualUserData = userData?.data;
     const [availableAssignments, setAvailableAssignments] = React.useState([]);
     const [currentOrder, setCurrentOrder] = React.useState({});
     const hasCurrentOrder = currentOrder && currentOrder.assignmentId;
     const [showOtpBox, setShowOtpBox] = React.useState(false);
     const [otp, setOtp] = React.useState("");
+    const [isSendingOtp, setIsSendingOtp] = React.useState(false);
+    const [isDelivering, setIsDelivering] = React.useState(false);
+    const navigate = useNavigate();
 
     const getAssignments = async () => {
         try {
@@ -48,6 +52,7 @@ const DelivaryManDashboard = () => {
     };
 
     const sendOtp = async (shopOrderId) => {
+        setIsSendingOtp(true);
         try {
             const result = await axios.post(
                 `${serverUrl}/api/order/send-delivery-otp`,
@@ -63,10 +68,13 @@ const DelivaryManDashboard = () => {
             setShowOtpBox(true);
         } catch (error) {
             console.log("err: sending otp", error);
+        } finally {
+            setIsSendingOtp(false);
         }
     };
 
     const verifyOtp = async (shopOrderId) => {
+        setIsDelivering(true);
         try {
             const result = await axios.post(
                 `${serverUrl}/api/order/verify-delivery-otp`,
@@ -80,8 +88,13 @@ const DelivaryManDashboard = () => {
                 },
             );
             console.log(result.data);
+            alert("Order delivered successfully!");
+            navigate("/my-orders");
         } catch (error) {
             console.log("err: verifying otp", error);
+            alert("Failed to verify OTP.");
+        } finally {
+            setIsDelivering(false);
         }
     };
 
@@ -104,6 +117,19 @@ const DelivaryManDashboard = () => {
         getAssignments();
         getCurrentOrder();
     }, [userData]);
+
+    useEffect(() => {
+        if (socket) {
+            socket.on("newDeliveryAssignment", (data) => {
+                console.log("SOCKET NEW DELIVERY ASSIGNMENT:", data);
+                getAssignments();
+            });
+
+            return () => {
+                socket.off("newDeliveryAssignment");
+            };
+        }
+    }, [socket]);
 
     console.log(availableAssignments);
 
@@ -422,9 +448,12 @@ const DelivaryManDashboard = () => {
                                     onClick={() =>
                                         sendOtp(currentOrder?.shopOrder?._id)
                                     }
-                                    className="w-full py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold bg-green-500 text-white hover:bg-green-600 active:scale-[0.99] transition"
+                                    disabled={isSendingOtp}
+                                    className={`w-full py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold text-white transition ${isSendingOtp ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 active:scale-[0.99]"}`}
                                 >
-                                    📦 Mark Order as Delivered
+                                    {isSendingOtp
+                                        ? "Sending OTP..."
+                                        : "📦 Mark Order as Delivered"}
                                 </button>
                             ) : (
                                 <div className="flex flex-col gap-3">
@@ -457,9 +486,12 @@ const DelivaryManDashboard = () => {
                                                         ?._id,
                                                 )
                                             }
-                                            className="w-full sm:w-auto px-6 py-3 rounded-xl text-sm sm:text-base font-semibold bg-green-500 text-white hover:bg-green-600 active:scale-[0.98] transition"
+                                            disabled={isDelivering || !otp}
+                                            className={`w-full sm:w-auto px-6 py-3 rounded-xl text-sm sm:text-base font-semibold text-white transition ${isDelivering || !otp ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 active:scale-[0.98]"}`}
                                         >
-                                            ✅ Confirm Delivery
+                                            {isDelivering
+                                                ? "Verifying..."
+                                                : "✅ Confirm Delivery"}
                                         </button>
                                     </div>
 
