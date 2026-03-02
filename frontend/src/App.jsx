@@ -24,6 +24,7 @@ import FoodPreview from "./pages/FoodPreview";
 import { useEffect } from "react";
 import { io } from "socket.io-client";
 import { setSocket, updateOrderStatus } from "./redux/userSlice";
+import NotFoundPage from "./pages/NotFoundPage";
 
 export const serverUrl = "https://foodtalab-backend.onrender.com";
 
@@ -143,6 +144,7 @@ function App() {
                 path="/shop-view/:shopId"
                 element={!userData ? <Navigate to="/signin" /> : <ShopView />}
             />
+            <Route path="*" element={<NotFoundPage />} />
         </Routes>
     );
 }
