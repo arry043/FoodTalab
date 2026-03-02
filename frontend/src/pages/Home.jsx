@@ -1,7 +1,7 @@
 import React from "react";
-import UserDashboard from "../components/userDashboard";
-import OwnerDashboard from "../components/ownerDashboard";
-import DelivaryManDashboard from "../components/delivaryManDashboard";
+import UserDashboard from "../components/UserDashboard";
+import OwnerDashboard from "../components/OwnerDashboard";
+import DelivaryManDashboard from "../components/DelivaryManDashboard";
 import { useSelector } from "react-redux";
 
 export const Home = () => {
