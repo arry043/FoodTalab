@@ -115,16 +115,21 @@ export const signIn = async (req, res) => {
 };
 
 export const signOut = async (req, res) => {
-    const user = req.user;
     try {
-        res.clearCookie("token");
-        return res
-            .status(200)
-            .json({ data: user, message: "logout successfully" });
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+        });
+
+        return res.status(200).json({
+            message: "Logout successfully",
+        });
     } catch (error) {
-        return res
-            .status(500)
-            .json({ message: "Server Error: signOut", error });
+        return res.status(500).json({
+            message: "Server Error: signOut",
+            error,
+        });
     }
 };
 
