@@ -37,10 +37,11 @@ export const updateUserLocation = async (req, res) => {
 
         return res
             .status(200)
-            .json({ message: "Location updated successfully" }); 
+            .json({ message: "Location updated successfully" });
     } catch (error) {
         return res
             .status(500)
             .json({ message: "Server Error: updateUserLocation", error });
     }
 };
+

@@ -1,15 +1,20 @@
-import React, { useState } from "react";
-import { FaDrumstickBite, FaLeaf, FaStar } from "react-icons/fa";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, removeFromCart } from "../redux/userSlice";
 import { useNavigate } from "react-router-dom";
+import {
+    FaDrumstickBite,
+    FaLeaf,
+    FaStar,
+    FaStarHalfAlt,
+    FaRegStar,
+} from "react-icons/fa";
 
 function FoodCard({ data }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const cartItems = useSelector((state) => state.user.cartItems);
-
     const cartItem = cartItems.find((i) => i.id === data._id);
     const quantity = cartItem?.quantity || 0;
 
@@ -22,7 +27,7 @@ function FoodCard({ data }) {
                 image: data.image,
                 shop: data.shop,
                 foodType: data.foodType,
-            }),
+            })
         );
     };
 
@@ -30,12 +35,40 @@ function FoodCard({ data }) {
         dispatch(removeFromCart(data._id));
     };
 
+    // ⭐ Proper Half-Star Logic
     const renderStars = (rating) => {
         const stars = [];
-        const rounded = Math.round(rating);
-        for (let i = 0; i < rounded; i++) {
-            stars.push(<FaStar key={i} className="text-yellow-500 text-xs" />);
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+        for (let i = 0; i < fullStars; i++) {
+            stars.push(
+                <FaStar
+                    key={`full-${i}`}
+                    className="text-yellow-400 text-[11px]"
+                />
+            );
         }
+
+        if (hasHalfStar) {
+            stars.push(
+                <FaStarHalfAlt
+                    key="half"
+                    className="text-yellow-400 text-[11px]"
+                />
+            );
+        }
+
+        for (let i = 0; i < emptyStars; i++) {
+            stars.push(
+                <FaRegStar
+                    key={`empty-${i}`}
+                    className="text-white/40 text-[11px]"
+                />
+            );
+        }
+
         return stars;
     };
 
@@ -43,14 +76,11 @@ function FoodCard({ data }) {
     const ratingCount = data.rating?.count || 0;
 
     return (
-        <div
-            className="w-full h-full bg-white rounded-2xl border border-orange-100
-            shadow-md hover:shadow-xl transition-all duration-300
-            overflow-hidden flex flex-col group"
-        >
-            {/* IMAGE */}
+        <div className="w-full bg-white rounded-2xl border border-orange-100 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group">
+            
+            {/* IMAGE SECTION */}
             <div
-                className="relative w-full h-[180px] overflow-hidden shrink-0"
+                className="relative w-full h-[180px] overflow-hidden"
                 onClick={() => navigate(`/food-preview/${data._id}`)}
             >
                 <img
@@ -59,7 +89,7 @@ function FoodCard({ data }) {
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                 />
 
-                {/* VEG/NON-VEG */}
+                {/* Veg / Non-Veg */}
                 <div className="absolute top-3 right-3 bg-white rounded-full p-1.5 shadow">
                     {data.foodType?.toLowerCase() === "veg" ? (
                         <FaLeaf className="text-green-600 text-sm" />
@@ -68,28 +98,28 @@ function FoodCard({ data }) {
                     )}
                 </div>
 
-                {/* ⭐ STAR BADGE (only if rating > 0) */}
-                {ratingAvg > 0 && (
-                    <div
-                        className="absolute top-3 left-3 bg-white/90 backdrop-blur
-                        rounded-full px-2.5 py-1 text-xs font-semibold
-                        flex items-center gap-1 shadow"
-                    >
-                        {renderStars(ratingAvg)}
-                        <span className="ml-1">{ratingAvg.toFixed(1)}</span>
+                {/* ⭐ Subtle Rating Badge */}
+                {ratingAvg > 0 && ratingCount > 0 && (
+                    <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1.5 text-[11px] shadow-sm">
+                        <div className="flex items-center gap-[2px]">
+                            {renderStars(ratingAvg)}
+                        </div>
+                        <span className="text-white font-medium">
+                            {ratingAvg.toFixed(1)}
+                        </span>
                     </div>
                 )}
             </div>
 
             {/* CONTENT */}
             <div className="flex flex-col flex-1 p-4">
-                {/* NAME + RATING COUNT */}
+                
+                {/* Title + Rating Count */}
                 <div className="flex items-start justify-between gap-2">
                     <h3 className="text-base font-semibold text-gray-800 line-clamp-1">
                         {data.name}
                     </h3>
 
-                    {/* rating count only if > 0 */}
                     {ratingCount > 0 && (
                         <span className="text-xs text-gray-500 whitespace-nowrap">
                             {ratingCount >= 1000
@@ -100,7 +130,9 @@ function FoodCard({ data }) {
                     )}
                 </div>
 
-                <p className="text-xs text-gray-500 mt-0.5">{data.category}</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                    {data.category}
+                </p>
 
                 <p className="text-sm text-gray-500 mt-2 line-clamp-2">
                     {data.description}
@@ -112,7 +144,6 @@ function FoodCard({ data }) {
                         ₹{data.price}
                     </span>
 
-                    {/* 👉 SAME HEIGHT WRAPPER */}
                     <div className="h-[36px] flex items-center">
                         {quantity === 0 ? (
                             <button
@@ -122,23 +153,19 @@ function FoodCard({ data }) {
                                 ADD
                             </button>
                         ) : (
-                            <div
-                                className="h-full flex items-center gap-3 px-3
-            border border-[#ff4d2d] rounded-full
-            text-[#ff4d2d] font-semibold"
-                            >
+                            <div className="h-full flex items-center gap-3 px-3 border border-[#ff4d2d] rounded-full text-[#ff4d2d] font-semibold">
                                 <button
                                     onClick={handleDecrease}
-                                    className="text-lg leading-none cursor-pointer"
+                                    className="text-lg leading-none"
                                 >
                                     −
                                 </button>
-
-                                <span className="text-sm">{quantity}</span>
-
+                                <span className="text-sm">
+                                    {quantity}
+                                </span>
                                 <button
                                     onClick={handleIncrease}
-                                    className="text-lg leading-none cursor-pointer"
+                                    className="text-lg leading-none"
                                 >
                                     +
                                 </button>

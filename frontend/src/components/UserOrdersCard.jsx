@@ -3,8 +3,60 @@ import { FaStore } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
 import { IoTimeOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Star } from "lucide-react";
+import axios from "axios";
+import { serverUrl } from "../App";
 
 function UserOrdersCard({ order, index }) {
+    const [rating, setRating] = useState(0);
+    const [hover, setHover] = useState(0);
+    const [isRatingMode, setIsRatingMode] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const isFullyDelivered = order?.shopOrders?.every(
+        (so) => so.status === "delivered",
+    );
+
+    const handleRating = async () => {
+        try {
+            // Find all unique Item IDs across all shops in this order
+            const itemIds = new Set();
+            order?.shopOrders?.forEach((shopOrder) => {
+                shopOrder?.shopOrderItems?.forEach((orderItem) => {
+                    if (orderItem?.item?._id) {
+                        itemIds.add(orderItem.item._id);
+                    }
+                });
+            });
+
+            const uniqueItemIds = Array.from(itemIds);
+
+            if (uniqueItemIds.length === 0) {
+                console.log("No item IDs found to rate.");
+                return;
+            }
+
+            // Fire off a rating API call for every unique item in parallel
+            await Promise.all(
+                uniqueItemIds.map((itemId) =>
+                    axios.post(
+                        `${serverUrl}/api/item/rating`,
+                        {
+                            itemId,
+                            rating,
+                        },
+                        { withCredentials: true },
+                    ),
+                ),
+            );
+
+            setIsSubmitted(true);
+            setIsRatingMode(false);
+        } catch (error) {
+            console.log("Rating Submission Error:", error);
+        }
+    };
+
     const formatOrderTime = (dateStr) => {
         const date = new Date(dateStr);
         const now = new Date();
@@ -194,10 +246,8 @@ function UserOrdersCard({ order, index }) {
 
             {/* Action Buttons */}
             <div className="mt-4 flex gap-3">
-                {/* Only show Track Order if not fully delivered */}
-                {!order?.shopOrders?.every(
-                    (so) => so.status === "delivered",
-                ) && (
+                {/* Track Order */}
+                {!isFullyDelivered && (
                     <button
                         onClick={() => navigate(`/track-order/${order?._id}`)}
                         className="flex-1 py-2 text-sm rounded-xl border border-[#ff4d2d] text-[#ff4d2d] hover:bg-[#ff4d2d] hover:text-white transition"
@@ -205,12 +255,69 @@ function UserOrdersCard({ order, index }) {
                         Track Order
                     </button>
                 )}
-                <button
-                    onClick={() => navigate("/")}
-                    className="flex-1 py-2 text-sm rounded-xl bg-[#ff4d2d] text-white hover:bg-[#e64427] transition"
-                >
-                    Reorder
-                </button>
+
+                {/* Rating Section */}
+                {isFullyDelivered && (
+                    <div className="flex-1 bg-white border border-gray-200 rounded-xl p-2 flex flex-col items-center justify-center shadow-sm">
+                        <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                    key={star}
+                                    size={20}
+                                    onClick={() => {
+                                        if (!isSubmitted) {
+                                            setRating(star);
+                                            setIsRatingMode(true);
+                                        }
+                                    }}
+                                    onMouseEnter={() =>
+                                        !isSubmitted && setHover(star)
+                                    }
+                                    onMouseLeave={() => setHover(0)}
+                                    className={`cursor-pointer transition-all duration-200
+                        ${
+                            star <= (hover || rating)
+                                ? "fill-yellow-400 text-yellow-400 scale-110"
+                                : "text-gray-300"
+                        }
+                        ${isSubmitted && "cursor-default"}
+                        `}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Show Submit & Reset while rating */}
+                        {isRatingMode && !isSubmitted && (
+                            <div className="flex gap-2 mt-2 w-full">
+                                <button
+                                    onClick={handleRating}
+                                    className="flex-1 py-1 text-xs rounded-lg bg-green-500 text-white hover:bg-green-600 transition"
+                                >
+                                    Submit
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setRating(0);
+                                        setIsRatingMode(false);
+                                    }}
+                                    className="flex-1 py-1 text-xs rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+                                >
+                                    Reset
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Reorder Button (Hide while rating mode active) */}
+                {!isRatingMode && (
+                    <button
+                        onClick={() => navigate("/")}
+                        className="flex-1 py-2 text-sm rounded-xl bg-[#ff4d2d] text-white hover:bg-[#e64427] transition"
+                    >
+                        Reorder
+                    </button>
+                )}
             </div>
         </div>
     );

@@ -208,3 +208,39 @@ export const searchItems = async (req, res) => {
             .json({ message: "Server Error: searchItems", error });
     }
 };
+
+export const rating = async (req, res) => {
+    try {
+        const { itemId, rating } = req.body;
+
+        if (!itemId || !rating) {
+            return res
+                .status(400)
+                .json({ message: "Item ID and rating are required" });
+        }
+        if (rating < 1 || rating > 5) {
+            return res
+                .status(400)
+                .json({ message: "Rating must be between 1 and 5" });
+        }
+
+        const item = await Item.findById(itemId);
+        if (!item) {
+            return res.status(400).json({ message: "Item not found" });
+        }
+
+        const newCount = item.rating.count + 1;
+        const newAvg =
+            (item.rating.avg * item.rating.count + rating) / newCount;
+
+        item.rating.avg = newAvg;
+        item.rating.count = newCount;
+        await item.save();
+
+        return res
+            .status(200)
+            .json({ data: item, message: "Rating submitted successfully" });
+    } catch (error) {
+        return res.status(500).json({ message: "Server Error: rating", error });
+    }
+};
