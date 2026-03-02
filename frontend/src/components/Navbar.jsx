@@ -10,6 +10,7 @@ import {
     setUserData,
     setItemsInMyCity,
     setIsSearching,
+    setCity,
 } from "../redux/userSlice";
 import { serverUrl } from "../App";
 import { FaPlus } from "react-icons/fa";
@@ -51,8 +52,9 @@ const Navbar = () => {
     const [query, setQuery] = useState("");
     const handleSearchItems = async () => {
         try {
+            const cityQuery = city ? `&city=${city}` : "";
             const res = await axios.get(
-                `${serverUrl}/api/item/search-items?query=${query}&city=${city}`,
+                `${serverUrl}/api/item/search-items?query=${query}${cityQuery}`,
                 { withCredentials: true },
             );
 
@@ -60,6 +62,41 @@ const Navbar = () => {
             dispatch(setSearchItems(res.data.data));
         } catch (error) {
             console.error("Error searching items:", error);
+        }
+    };
+
+    // GEOLOCATION FETCH
+    const fetchLocation = () => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    try {
+                        const res = await axios.get(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+                        );
+                        const fetchedCity =
+                            res.data?.address?.city ||
+                            res.data?.address?.town ||
+                            res.data?.address?.village ||
+                            res.data?.address?.county;
+
+                        if (fetchedCity) {
+                            dispatch(setCity(fetchedCity));
+                        } else {
+                            alert("Could not determine city from location.");
+                        }
+                    } catch (error) {
+                        console.error("Error reverse geocoding:", error);
+                    }
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    alert("Please allow location access to fetch your city.");
+                },
+            );
+        } else {
+            alert("Geolocation is not supported by your browser");
         }
     };
 
@@ -90,12 +127,15 @@ const Navbar = () => {
             </h1>
 
             {/* ================= USER DESKTOP SEARCH BAR ================= */}
-            {role === "user" && (
+            {(!role || role === "user") && (
                 <div className="md:w-[60%] lg:w-[40%] h-15 bg-white shadow-xl rounded-lg items-center hidden md:flex gap-[20px]">
-                    <div className="flex items-center w-[40%] overflow-hidden gap-[10px] px-[10px] border-r-[2px] border-gray-400">
+                    <div
+                        onClick={!city ? fetchLocation : undefined}
+                        className={`flex items-center w-[40%] overflow-hidden gap-[10px] px-[10px] border-r-[2px] border-gray-400 ${!city ? "cursor-pointer hover:bg-gray-50 transition" : ""}`}
+                    >
                         <MdLocationPin size={25} className="text-[#ff4d2d]" />
-                        <div className="w-[80%] truncate text-gray-600">
-                            {city}
+                        <div className="w-[80%] truncate text-gray-600 font-medium whitespace-nowrap">
+                            {city ? city : "Select location"}
                         </div>
                     </div>
                     <div className="flex items-center w-full gap-2 px-[10px] py-2">
@@ -121,7 +161,7 @@ const Navbar = () => {
 
             <div className="flex justify-center items-center gap-5">
                 {/* ================= USER MOBILE SEARCH TOGGLE ================= */}
-                {role === "user" && (
+                {(!role || role === "user") && (
                     <div
                         onClick={() => setShowSearch((prev) => !prev)}
                         className="md:hidden cursor-pointer transition-all ease-in-out duration-500 text-[#ff4d2d] text-sm font-medium"
@@ -153,10 +193,12 @@ const Navbar = () => {
                 )}
 
                 {/* ================= USER CART ================= */}
-                {role === "user" && (
+                {(!role || role === "user") && (
                     <div
                         className="relative cursor-pointer"
-                        onClick={() => navigate("/cart")}
+                        onClick={() =>
+                            userData ? navigate("/cart") : navigate("/signin")
+                        }
                     >
                         <IoMdCart size={25} className="text-[#ff4d2d]" />
                         <span className="absolute text-sm text-[#ff4d2d] left-3 bottom-4.5">
@@ -213,45 +255,59 @@ const Navbar = () => {
                     </div>
                 )}
 
-                <div
-                    onClick={() => setShowInfo((prev) => !prev)}
-                    className="w-9 h-9 text-lg font-semibold shadow-2xl bg-[#ff4d2d] text-white rounded-full flex justify-center items-center cursor-pointer "
-                >
-                    {actualUserData?.fullName?.charAt(0)}
-                </div>
+                {/* ================= PROFILE DROPDOWN OR LOGIN ================= */}
+                {!userData ? (
+                    <button
+                        onClick={() => navigate("/signin")}
+                        className="cursor-pointer bg-[#ff4d2d] hover:bg-[#ff4d2d]/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold transition shadow-md"
+                    >
+                        Login
+                    </button>
+                ) : (
+                    <>
+                        <div
+                            onClick={() => setShowInfo((prev) => !prev)}
+                            className="w-9 h-9 text-lg font-semibold shadow-2xl bg-[#ff4d2d] text-white rounded-full flex justify-center items-center cursor-pointer "
+                        >
+                            {actualUserData?.fullName?.charAt(0)}
+                        </div>
 
-                {/* ================= PROFILE DROPDOWN ================= */}
-                {showInfo && (
-                    <div className="fixed top-20 right-15 md:right-[5%] lg:right-[20%] w-50 bg-white shadow-2xl rounded-xl p-5 flex flex-col gap-3 z-[9999]">
-                        <div className="text-sm font-semibold">
-                            Hey...! {actualUserData.fullName}
-                        </div>
-                        <div
-                            onClick={() => navigate("/my-orders")}
-                            className="md:hidden font-semibold text-sm cursor-pointer hover:text-[#ff4d2d]"
-                        >
-                            My Orders
-                        </div>
-                        <div
-                            onClick={handleLogout}
-                            className="text-[#ff4d2d] font-semibold text-sm text-end cursor-pointer hover:text-[#ff4d2d]/75"
-                        >
-                            Logout
-                        </div>
-                    </div>
+                        {showInfo && (
+                            <div className="fixed top-20 right-15 md:right-[5%] lg:right-[20%] w-50 bg-white shadow-2xl rounded-xl p-5 flex flex-col gap-3 z-[9999]">
+                                <div className="text-sm font-semibold">
+                                    Hey...! {actualUserData.fullName}
+                                </div>
+                                <div
+                                    onClick={() => navigate("/my-orders")}
+                                    className="md:hidden font-semibold text-sm cursor-pointer hover:text-[#ff4d2d]"
+                                >
+                                    My Orders
+                                </div>
+                                <div
+                                    onClick={handleLogout}
+                                    className="text-[#ff4d2d] font-semibold text-sm text-end cursor-pointer hover:text-[#ff4d2d]/75"
+                                >
+                                    Logout
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* ================= USER MOBILE SEARCH BOX ================= */}
-                {showSearch && role === "user" && (
+                {showSearch && (!role || role === "user") && (
                     <div className="md:hidden fixed top-15 right-[10%] w-[80%]">
                         <div className="h-15 bg-white shadow-xl rounded-lg flex items-center gap-1">
-                            <div className="flex items-center w-[40%] overflow-hidden gap-1 px-2 border-r-[2px] border-gray-400">
+                            <div
+                                onClick={!city ? fetchLocation : undefined}
+                                className={`flex items-center w-[40%] overflow-hidden gap-1 px-2 border-r-[2px] border-gray-400 ${!city ? "cursor-pointer hover:bg-gray-50 transition" : ""}`}
+                            >
                                 <MdLocationPin
                                     size={22}
                                     className="text-[#ff4d2d]"
                                 />
-                                <div className="w-[60%] text-sm truncate text-gray-600">
-                                    {city}
+                                <div className="w-[60%] text-sm truncate text-gray-600 font-medium whitespace-nowrap">
+                                    {city ? city : "Select location"}
                                 </div>
                             </div>
                             <div className="flex items-center w-full gap-1 px-2 py-2">

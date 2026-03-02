@@ -6,10 +6,12 @@ import { setMyShopData } from "../redux/ownerSlice";
 
 function useGetMyShop() {
     const dispatch = useDispatch();
-    const {myShopData} = useSelector((state) => state.owner);
-    const {userData} = useSelector((state) => state.user);
+    const { myShopData } = useSelector((state) => state.owner);
+    const { userData } = useSelector((state) => state.user);
+
     useEffect(() => {
-        if (myShopData) return;
+        if (!userData || myShopData) return;
+
         const fetchShop = async () => {
             try {
                 const result = await axios.get(`${serverUrl}/api/shop/myshop`, {

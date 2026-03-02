@@ -8,6 +8,7 @@ import {
     getItemsByCity,
     rating,
     searchItems,
+    getGuestItems,
 } from "../controllers/item.controllers.js";
 import upload from "../middlewares/multer.js";
 
@@ -18,7 +19,8 @@ itemRouter.put("/edit-item/:itemId", isAuth, upload.single("image"), editItem);
 itemRouter.get("/get-item-by-id/:itemId", isAuth, getItemById);
 itemRouter.delete("/delete-item/:itemId", isAuth, deleteItem);
 itemRouter.get("/getitembycity/:city", isAuth, getItemsByCity);
-itemRouter.get("/search-items", isAuth, searchItems);
+itemRouter.get("/search-items", searchItems);
 itemRouter.post("/rating", isAuth, rating);
+itemRouter.get("/guest-items", getGuestItems);
 
 export default itemRouter;

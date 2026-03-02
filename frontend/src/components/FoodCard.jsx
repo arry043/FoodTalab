@@ -14,11 +14,17 @@ function FoodCard({ data }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const userData = useSelector((state) => state.user.userData);
     const cartItems = useSelector((state) => state.user.cartItems);
     const cartItem = cartItems.find((i) => i.id === data._id);
     const quantity = cartItem?.quantity || 0;
 
     const handleIncrease = () => {
+        if (!userData) {
+            navigate("/signin");
+            return;
+        }
+
         dispatch(
             addToCart({
                 id: data._id,
@@ -27,7 +33,7 @@ function FoodCard({ data }) {
                 image: data.image,
                 shop: data.shop,
                 foodType: data.foodType,
-            })
+            }),
         );
     };
 
@@ -47,7 +53,7 @@ function FoodCard({ data }) {
                 <FaStar
                     key={`full-${i}`}
                     className="text-yellow-400 text-[11px]"
-                />
+                />,
             );
         }
 
@@ -56,7 +62,7 @@ function FoodCard({ data }) {
                 <FaStarHalfAlt
                     key="half"
                     className="text-yellow-400 text-[11px]"
-                />
+                />,
             );
         }
 
@@ -65,7 +71,7 @@ function FoodCard({ data }) {
                 <FaRegStar
                     key={`empty-${i}`}
                     className="text-white/40 text-[11px]"
-                />
+                />,
             );
         }
 
@@ -77,7 +83,6 @@ function FoodCard({ data }) {
 
     return (
         <div className="w-full bg-white rounded-2xl border border-orange-100 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group">
-            
             {/* IMAGE SECTION */}
             <div
                 className="relative w-full h-[180px] overflow-hidden"
@@ -113,7 +118,6 @@ function FoodCard({ data }) {
 
             {/* CONTENT */}
             <div className="flex flex-col flex-1 p-4">
-                
                 {/* Title + Rating Count */}
                 <div className="flex items-start justify-between gap-2">
                     <h3 className="text-base font-semibold text-gray-800 line-clamp-1">
@@ -130,9 +134,7 @@ function FoodCard({ data }) {
                     )}
                 </div>
 
-                <p className="text-xs text-gray-500 mt-0.5">
-                    {data.category}
-                </p>
+                <p className="text-xs text-gray-500 mt-0.5">{data.category}</p>
 
                 <p className="text-sm text-gray-500 mt-2 line-clamp-2">
                     {data.description}
@@ -160,9 +162,7 @@ function FoodCard({ data }) {
                                 >
                                     −
                                 </button>
-                                <span className="text-sm">
-                                    {quantity}
-                                </span>
+                                <span className="text-sm">{quantity}</span>
                                 <button
                                     onClick={handleIncrease}
                                     className="text-lg leading-none"

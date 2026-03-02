@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect } from "react";
 import { useState } from "react";
+import { serverUrl } from "../App.jsx";
 
 const UserDashboard = () => {
     // REDUX - getting user data
@@ -26,12 +27,15 @@ const UserDashboard = () => {
     // console.log("Shops: ", shopsInMyCity);
     const [selectedCategoryList, setSelectedCategoryList] =
         useState(itemsInMyCity);
+    const [rawGuestItems, setRawGuestItems] = useState([]);
 
     const handleFilterByCategory = (category) => {
+        const sourceList = userData ? itemsInMyCity : rawGuestItems;
+
         if (category === "All") {
-            setSelectedCategoryList(itemsInMyCity);
+            setSelectedCategoryList(sourceList);
         } else {
-            const filteredItems = itemsInMyCity.filter(
+            const filteredItems = sourceList.filter(
                 (item) => item.category === category,
             );
             setSelectedCategoryList(filteredItems);
@@ -76,6 +80,23 @@ const UserDashboard = () => {
         }
     }, [itemsInMyCity, isSearching]);
 
+    useEffect(() => {
+        const fetchGuestItems = async () => {
+            if (!userData) {
+                try {
+                    const res = await axios.get(
+                        `${serverUrl}/api/item/guest-items`,
+                    );
+                    setRawGuestItems(res.data.data);
+                    setSelectedCategoryList(res.data.data);
+                } catch (error) {
+                    console.error("Failed to fetch guest items: ", error);
+                }
+            }
+        };
+        fetchGuestItems();
+    }, [userData]);
+
     return (
         <div className="w-full min-h-screen bg-white flex flex-col items-center">
             <Navbar />
@@ -84,7 +105,9 @@ const UserDashboard = () => {
             <div className="w-full max-w-7xl px-5 mt-10 md:mt-17 relative">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">
-                        {userData?.data?.fullName}, what's in your mind today?
+                        {userData?.data?.fullName
+                            ? `${userData.data.fullName}, what's in your mind today?`
+                            : "What's in your mind today?"}
                         😋
                     </h2>
 
@@ -125,69 +148,76 @@ const UserDashboard = () => {
                 </div>
             </div>
             {/* BEST SHOPS */}
-            <div className="w-full max-w-7xl px-5 mt-10 md:mt-17 relative">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                        Best Shops in {city}
-                    </h2>
-                    {/* <button onClick={() => navigate("shop-view/6986d4fb8c0f5fd125e2555d")}>new shop</button> */}
+            {userData && (
+                <div className="w-full max-w-7xl px-5 mt-10 md:mt-17 relative">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            Best Shops in {city}
+                        </h2>
+                        {/* <button onClick={() => navigate("shop-view/6986d4fb8c0f5fd125e2555d")}>new shop</button> */}
 
-                    <div className="hidden md:flex gap-3">
-                        <button
-                            onClick={scrollShopLeft}
-                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
-                        >
-                            <FaChevronLeft size={14} className="md:text-base" />
-                        </button>
+                        <div className="hidden md:flex gap-3">
+                            <button
+                                onClick={scrollShopLeft}
+                                className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
+                            >
+                                <FaChevronLeft
+                                    size={14}
+                                    className="md:text-base"
+                                />
+                            </button>
 
-                        <button
-                            onClick={scrollShopRight}
-                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
-                        >
-                            <FaChevronRight
-                                size={14}
-                                className="md:text-base"
-                            />
-                        </button>
-                    </div>
-                </div>
-
-                {/* SHOP STRIP */}
-                <div
-                    ref={shopScrollRef}
-                    className="flex gap-10 overflow-x-auto scrollbar-hide scroll-smooth py-2"
-                >
-                    {shopsInMyCity &&
-                        shopsInMyCity.length > 0 &&
-                        shopsInMyCity.map((shop, index) => (
-                            <ShopsInMyCityCard
-                                onClick={() => handleFilterByShop(shop._id)}
-                                key={shop._id || index}
-                                name={shop.name}
-                                image={shop.image}
-                            />
-                        ))}
-                    <div
-                        onClick={() => setSelectedCategoryList(itemsInMyCity)}
-                        className="flex flex-col items-center shrink-0 cursor-pointer group"
-                    >
-                        <div
-                            className="w-[90px] h-[90px] sm:w-[105px] sm:h-[105px] md:w-[120px] md:h-[120px]
-                rounded-xl overflow-hidden bg-white shadow-md
-                group-hover:shadow-xl transition"
-                        >
-                            <img
-                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIeaFxft3L8b0IPngXWlPR0mP5qY-2Rbsc0zQLF9OZmQ&s"
-                                className="w-full h-full object-cover group-hover:scale-105 transition"
-                            />
+                            <button
+                                onClick={scrollShopRight}
+                                className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
+                            >
+                                <FaChevronRight
+                                    size={14}
+                                    className="md:text-base"
+                                />
+                            </button>
                         </div>
+                    </div>
 
-                        <p className=" mt-2 text-sm sm:text-base font-medium text-gray-700 text-center w-[90px] leading-tight line-clamp-2">
-                            All Shops
-                        </p>
+                    {/* SHOP STRIP */}
+                    <div
+                        ref={shopScrollRef}
+                        className="flex gap-10 overflow-x-auto scrollbar-hide scroll-smooth py-2"
+                    >
+                        {shopsInMyCity &&
+                            shopsInMyCity.length > 0 &&
+                            shopsInMyCity.map((shop, index) => (
+                                <ShopsInMyCityCard
+                                    onClick={() => handleFilterByShop(shop._id)}
+                                    key={shop._id || index}
+                                    name={shop.name}
+                                    image={shop.image}
+                                />
+                            ))}
+                        <div
+                            onClick={() =>
+                                setSelectedCategoryList(itemsInMyCity)
+                            }
+                            className="flex flex-col items-center shrink-0 cursor-pointer group"
+                        >
+                            <div
+                                className="w-[90px] h-[90px] sm:w-[105px] sm:h-[105px] md:w-[120px] md:h-[120px]
+                    rounded-xl overflow-hidden bg-white shadow-md
+                    group-hover:shadow-xl transition"
+                            >
+                                <img
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIeaFxft3L8b0IPngXWlPR0mP5qY-2Rbsc0zQLF9OZmQ&s"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition"
+                                />
+                            </div>
+
+                            <p className=" mt-2 text-sm sm:text-base font-medium text-gray-700 text-center w-[90px] leading-tight line-clamp-2">
+                                All Shops
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
             {/* PRODUCT */}
             <div className="w-full max-w-7xl px-5 mt-10">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">

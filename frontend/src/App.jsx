@@ -78,10 +78,7 @@ function App() {
 
     return (
         <Routes>
-            <Route
-                path="/"
-                element={userData ? <Home /> : <Navigate to="/signin" />}
-            />
+            <Route path="/" element={<Home />} />
             <Route
                 path="/signup"
                 element={userData ? <Navigate to="/" /> : <SignUp />}

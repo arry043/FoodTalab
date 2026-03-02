@@ -163,43 +163,32 @@ export const searchItems = async (req, res) => {
     try {
         const { query, city } = req.query;
 
-        if (!query || !city) {
+        if (!query) {
             return res
                 .status(400)
-                .json({ message: "Query and city are required for searching" });
+                .json({ message: "Query is required for searching" });
         }
 
-        const shops = await Shop.find({
-            city: { $regex: new RegExp(`${city}$`, "i") },
-        })
-            .populate("owner")
-            .populate({
-                path: "items",
-                options: { sort: { updatedAt: -1 } },
+        // Search options base
+        const filter = {
+            name: { $regex: new RegExp(query, "i") },
+        };
+
+        // If city is provided, first filter via shop cities
+        let shopIds = null;
+        if (city && city !== "undefined" && city !== "null") {
+            const shops = await Shop.find({
+                city: { $regex: new RegExp(`${city}$`, "i") },
             });
-
-        if (!shops || shops.length === 0) {
-            return res
-                .status(400)
-                .json({ message: `No shops found in the city: ${city}` });
+            shopIds = shops.map((s) => s._id);
         }
 
-        const shopIds = shops.map((shop) => shop._id);
-        const items = await Item.find({
-            shop: { $in: shopIds },
-            $or: [
-                { name: { $regex: new RegExp(query, "i") } },
-                { description: { $regex: new RegExp(query, "i") } },
-                { category: { $regex: new RegExp(query, "i") } },
-            ],
-        }).populate("shop");
-
-        if (!items || items.length === 0) {
-            return res.status(200).json({
-                data: [],
-                message: "No items found",
-            });
+        // If we strictly filtered by city, apply it to the item search
+        if (shopIds !== null) {
+            filter.shop = { $in: shopIds };
         }
+
+        const items = await Item.find(filter).populate("shop");
 
         return res.status(200).json({ data: items });
     } catch (error) {
@@ -242,5 +231,40 @@ export const rating = async (req, res) => {
             .json({ data: item, message: "Rating submitted successfully" });
     } catch (error) {
         return res.status(500).json({ message: "Server Error: rating", error });
+    }
+};
+
+export const getGuestItems = async (req, res) => {
+    try {
+        // 1. Fetch top 8 items sorted by average rating in descending order
+        const topRatedItems = await Item.find({ "rating.avg": { $gt: 0 } })
+            .sort({ "rating.avg": -1 })
+            .limit(8)
+            .populate("shop", "name image _id");
+
+        // 2. Fetch random items to pad the list, excluding those already in topRatedItems
+        const topRatedIds = topRatedItems.map((item) => item._id);
+        const randomItems = await Item.aggregate([
+            { $match: { _id: { $nin: topRatedIds } } },
+            { $sample: { size: 8 } },
+        ]);
+
+        // Manually populate shop references for random aggregated items since aggregate doesn't run mongoose populate
+        await Item.populate(randomItems, {
+            path: "shop",
+            select: "name image _id",
+        });
+
+        // Combine both lists
+        const guestItems = [...topRatedItems, ...randomItems];
+
+        return res.status(200).json({
+            data: guestItems,
+            message: "Guest items fetched successfully.",
+        });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ message: "Server Error: getGuestItems", error });
     }
 };
