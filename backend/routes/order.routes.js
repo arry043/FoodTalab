@@ -5,6 +5,7 @@ import {
     getDeliveryBoyAssignment,
     getMyOrders,
     getOrderById,
+    getTodaysDeliveries,
     placeOrder,
     sendDeliveryOtp,
     updateOrderStatus,
@@ -24,6 +25,7 @@ orderRouter.put("/update-status/:orderId/:shopId", isAuth, updateOrderStatus);
 orderRouter.get("/accept-order/:assignmentId", isAuth, acceptOrder);
 orderRouter.get("/get-current-order/", isAuth, getCurrentOrder);
 orderRouter.get("/get-order/:orderId", isAuth, getOrderById);
+orderRouter.get("/get-today-deliveries", isAuth, getTodaysDeliveries);
 
 
 export default orderRouter;

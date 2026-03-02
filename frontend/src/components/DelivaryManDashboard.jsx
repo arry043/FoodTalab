@@ -9,6 +9,26 @@ import { serverUrl } from "../App";
 import DeliveryBoyTracking from "./DeliveryBoyTracking";
 import { useNavigate } from "react-router-dom";
 
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+);
+
 const DelivaryManDashboard = () => {
     const { userData, socket } = useSelector((state) => state.user);
     const actualUserData = userData?.data;
@@ -20,6 +40,7 @@ const DelivaryManDashboard = () => {
     const [isSendingOtp, setIsSendingOtp] = React.useState(false);
     const [isDelivering, setIsDelivering] = React.useState(false);
     const [liveLocation, setLiveLocation] = React.useState(null);
+    const [todayDeliveries, setTodayDeliveries] = React.useState([]);
     const navigate = useNavigate();
 
     // update delivery boy location every each second
@@ -144,9 +165,97 @@ const DelivaryManDashboard = () => {
         }
     };
 
+    const handleTodayDeliveries = async () => {
+        try {
+            const result = await axios.get(
+                `${serverUrl}/api/order/get-today-deliveries`,
+                {
+                    withCredentials: true,
+                },
+            );
+            setTodayDeliveries(result?.data?.data || []);
+            console.log("today deliveries:", result?.data?.data);
+        } catch (error) {
+            console.log("err: fetcing today deliveries", error);
+        }
+    };
+
+    const formatHour = (hour) => {
+        const h = parseInt(hour);
+        const suffix = h >= 12 ? "PM" : "AM";
+        const formatted = h % 12 === 0 ? 12 : h % 12;
+        return `${formatted} ${suffix}`;
+    };
+    const totalTodayDeliveries = todayDeliveries.reduce(
+        (sum, item) => sum + (item.count || 0),
+        0,
+    );
+
+    const chartData = {
+        labels: todayDeliveries.map((d) => formatHour(d.hour)),
+        datasets: [
+            {
+                label: "# of Deliveries",
+                data: todayDeliveries.map((d) => d.count),
+                backgroundColor: "rgba(255, 77, 45, 0.25)", // soft brand fill
+                borderColor: "#ff4d2d", // brand border
+                borderWidth: 2,
+                borderRadius: 10,
+                hoverBackgroundColor: "rgba(255, 77, 45, 0.4)",
+            },
+        ],
+    };
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: "#374151",
+                    font: {
+                        size: 13,
+                        weight: "600",
+                    },
+                },
+            },
+            tooltip: {
+                backgroundColor: "#111827",
+                titleColor: "#fff",
+                bodyColor: "#fff",
+                padding: 10,
+                cornerRadius: 8,
+            },
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false,
+                },
+                ticks: {
+                    color: "#6b7280",
+                    font: {
+                        size: 12,
+                    },
+                },
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: "rgba(0,0,0,0.05)",
+                },
+                ticks: {
+                    stepSize: 1,
+                    color: "#6b7280",
+                },
+            },
+        },
+    };
+
     useEffect(() => {
         getAssignments();
         getCurrentOrder();
+        handleTodayDeliveries();
     }, [userData]);
 
     useEffect(() => {
@@ -162,7 +271,10 @@ const DelivaryManDashboard = () => {
         }
     }, [socket]);
 
-    console.log(availableAssignments);
+    console.log("availableAssignments:", availableAssignments);
+    console.log("currentOrder:", currentOrder);
+    console.log("liveLocation:", liveLocation);
+    console.log("todayDeliveries:", todayDeliveries);
 
     return (
         <div className="w-full min-h-screen bg-[#fff9f6] flex flex-col items-center">
@@ -192,29 +304,78 @@ const DelivaryManDashboard = () => {
                     </div>
                 </div>
 
-                {/* Status Card */}
+                {/* ===== DASHBOARD SUMMARY SECTION ===== */}
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
-                        <p className="text-xs text-gray-500">Status</p>
-                        <p className="mt-1 text-sm font-semibold text-green-600">
-                            Available
+                    {/* STATUS CARD */}
+                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 flex flex-col justify-between hover:shadow-lg transition">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">
+                            Current Status
                         </p>
+
+                        <div className="mt-3 flex items-center justify-between">
+                            <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                🟢 Available
+                            </span>
+
+                            <span className="text-2xl">🚚</span>
+                        </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
-                        <p className="text-xs text-gray-500">
+                    {/* TOTAL EARNINGS CARD */}
+                    <div className="bg-gradient-to-br from-[#ffede8] to-white rounded-2xl shadow-md border border-orange-100 p-5 hover:shadow-lg transition">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">
+                            Total Earnings
+                        </p>
+
+                        <div className="mt-3 flex items-end justify-between">
+                            <h2 className="text-2xl font-bold text-[#ff4d2d]">
+                                ₹0
+                            </h2>
+
+                            <span className="text-xs text-gray-400">
+                                This Month
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* TODAY DELIVERIES CARD */}
+                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">
                             Today Deliveries
                         </p>
-                        <p className="mt-1 text-lg font-bold text-gray-800">
-                            0
-                        </p>
+
+                        <div className="mt-3 flex items-center justify-between">
+                            <h2 className="text-2xl font-bold text-gray-800">
+                                {totalTodayDeliveries}
+                            </h2>
+
+                            <span className="text-sm text-gray-400">
+                                📦 Orders
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ===== DELIVERY ACTIVITY CHART SECTION ===== */}
+
+                <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 mt-4">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-gray-700">
+                            📊 Delivery Activity (Today)
+                        </h3>
+
+                        <span className="text-xs text-gray-400">Hour-wise</span>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
-                        <p className="text-xs text-gray-500">Total Earnings</p>
-                        <p className="mt-1 text-lg font-bold text-gray-800">
-                            ₹0
-                        </p>
+                    <div className="h-[280px]">
+                        {todayDeliveries.length > 0 ? (
+                            <Bar data={chartData} options={chartOptions} />
+                        ) : (
+                            <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                                No delivery data available today 📭
+                            </div>
+                        )}
                     </div>
                 </div>
 

@@ -175,6 +175,19 @@ const Navbar = () => {
                     </button>
                 )}
 
+                {/* ================= DELIVERY BOY ORDERS BUTTON ================= */}
+                {role === "deliveryBoy" && (
+                    <button
+                        onClick={() => navigate("/my-orders")}
+                        className="cursor-pointer flex items-center w-10 h-10 md:w-auto md:h-auto hover:bg-[#ff4d2d]/5 px-3 py-1 rounded-full md:rounded-lg bg-[#ff4d2d]/15 text-[#ff4d2d] text-sm font-medium"
+                    >
+                        <LuReceipt size={20} />
+                        <span className="ml-2 hidden md:inline">
+                            My Deliveries
+                        </span>
+                    </button>
+                )}
+
                 {/* ================= OWNER ORDERS PENDING BUTTON ================= */}
                 {role === "owner" && (
                     <div className="relative">
