@@ -25,7 +25,7 @@ import { useEffect } from "react";
 import { io } from "socket.io-client";
 import { setSocket, updateOrderStatus } from "./redux/userSlice";
 
-export const serverUrl = "http://localhost:8000";
+export const serverUrl = "https://foodtalab-backend.onrender.com";
 
 function App() {
     useGetCurrentUser();
