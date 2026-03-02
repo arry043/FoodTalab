@@ -229,7 +229,8 @@ const UserDashboard = () => {
                 {/* 🔍 WHEN SEARCHING */}
                 {isSearching ? (
                     searchItems.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {" "}
                             {searchItems.map((item) => (
                                 <FoodCard key={item._id} data={item} />
                             ))}
@@ -243,7 +244,8 @@ const UserDashboard = () => {
                     )
                 ) : (
                     /* 🏠 NORMAL DASHBOARD */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {" "}
                         {selectedCategoryList.map((item) => (
                             <FoodCard key={item._id} data={item} />
                         ))}
