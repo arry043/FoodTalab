@@ -65,7 +65,7 @@ const Navbar = () => {
         }
     };
 
-    // GEOLOCATION FETCH
+    // GEOLOCATION FETCH 
     const fetchLocation = () => {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
