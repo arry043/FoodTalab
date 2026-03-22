@@ -41,7 +41,7 @@ const NotFoundPage = () => {
                 className="mt-8 flex items-center gap-2 bg-[#ff4d2d] hover:bg-[#e64427] text-white font-semibold px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.98] relative z-10"
             >
                 <FaArrowLeft size={14} />
-                Go Back Home
+                Explore Us
             </Link>
         </div>
     );
