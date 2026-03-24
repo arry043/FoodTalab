@@ -249,7 +249,7 @@ export const getGuestItems = async (req, res) => {
             { $sample: { size: 8 } },
         ]);
 
-        // Manually populate shop references for random aggregated items since aggregate doesn't run mongoose populate
+        // Manually populate shop references for random aggregated items since aggregate doesn't run
         await Item.populate(randomItems, {
             path: "shop",
             select: "name image _id",
