@@ -1,26 +1,29 @@
 import React from "react";
+import { motion } from "framer-motion";
 
 function ShopsInMyCityCard({ name, image, onClick }) {
     return (
-
-        <div onClick={onClick} className="flex flex-col items-center shrink-0 cursor-pointer group">
-            <div
-                className="w-[90px] h-[90px] sm:w-[105px] sm:h-[105px] md:w-[120px] md:h-[120px]
-                rounded-xl overflow-hidden bg-white shadow-md
-                group-hover:shadow-xl transition"
-            >
+        <motion.button
+            type="button"
+            onClick={onClick}
+            className="flex w-24 shrink-0 flex-col items-center group sm:w-28"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+        >
+            <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-white shadow-md ring-2 ring-transparent transition-all duration-300 group-hover:shadow-xl group-hover:ring-[var(--brand)]/20">
                 <img
                     src={image}
                     alt={name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition"
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             </div>
-
-            <p className=" mt-2 text-sm sm:text-base font-medium text-gray-700 text-center w-[90px] leading-tight line-clamp-2">
+            <span className="mt-2 line-clamp-2 w-full text-center text-xs font-bold leading-tight text-gray-700 transition-colors group-hover:text-[var(--brand)] sm:text-sm">
                 {name}
-            </p>
-        </div>
+            </span>
+        </motion.button>
     );
-} 
+}
 
 export default ShopsInMyCityCard;

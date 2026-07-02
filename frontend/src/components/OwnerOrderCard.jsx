@@ -3,7 +3,7 @@ import { MdLocationOn, MdPhone } from "react-icons/md";
 import { IoTimeOutline } from "react-icons/io5";
 import { FaUserCircle } from "react-icons/fa";
 import { LuMailCheck } from "react-icons/lu";
-import { serverUrl } from "../App";
+import { serverUrl } from "../config/api";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { updateOrderStatus } from "../redux/userSlice";

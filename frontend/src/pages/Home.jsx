@@ -8,7 +8,7 @@ export const Home = () => {
     const { userData } = useSelector((state) => state.user);
 
     return (
-        <div className="w-full min-h-screen pt-10 flex flex-col items-center bg-white">
+        <div className="app-shell w-full min-h-screen flex flex-col items-center">
             {(!userData || userData?.data?.role === "user") && (
                 <UserDashboard />
             )}

@@ -1,19 +1,51 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { LuMapPin, LuSearchX, LuSparkles, LuTrendingUp } from "react-icons/lu";
+import { motion } from "framer-motion";
 import Navbar from "./Navbar";
 import CategoryCard from "./CategoryCard";
-import { category } from "../category.js";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { useSelector } from "react-redux";
 import ShopsInMyCityCard from "./ShopsInMyCityCard.jsx";
 import FoodCard from "./FoodCard.jsx";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { useEffect } from "react";
-import { useState } from "react";
-import { serverUrl } from "../App.jsx";
+import { category } from "../category.js";
+import { serverUrl } from "../config/api";
+
+const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+};
+
+const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: { staggerChildren: 0.06 },
+    },
+};
+
+const FoodSkeletonGrid = () => (
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, index) => (
+            <div
+                key={index}
+                className="overflow-hidden rounded-2xl bg-white border border-orange-50 p-2.5 sm:p-3"
+            >
+                <div className="skeleton aspect-[4/3] w-full rounded-xl" />
+                <div className="mt-3 space-y-2 px-1">
+                    <div className="skeleton h-4 w-3/4 rounded-lg" />
+                    <div className="skeleton h-3 w-full rounded-lg" />
+                    <div className="flex items-center justify-between pt-2">
+                        <div className="skeleton h-5 w-16 rounded-lg" />
+                        <div className="skeleton h-8 w-14 rounded-full" />
+                    </div>
+                </div>
+            </div>
+        ))}
+    </div>
+);
 
 const UserDashboard = () => {
-    // REDUX - getting user data
     const {
         userData,
         city,
@@ -22,171 +54,200 @@ const UserDashboard = () => {
         searchItems,
         isSearching,
     } = useSelector((state) => state.user);
-    const navigate = useNavigate();
-    // console.log(userData);
-    // console.log("Shops: ", shopsInMyCity);
-    const [selectedCategoryList, setSelectedCategoryList] =
-        useState(itemsInMyCity);
+
+    const [selectedCategoryList, setSelectedCategoryList] = useState([]);
     const [rawGuestItems, setRawGuestItems] = useState([]);
+    const [loadingGuestItems, setLoadingGuestItems] = useState(false);
+    const [activeCategory, setActiveCategory] = useState("All");
 
-    const handleFilterByCategory = (category) => {
-        const sourceList = userData ? itemsInMyCity : rawGuestItems;
-
-        if (category === "All") {
-            setSelectedCategoryList(sourceList);
-        } else {
-            const filteredItems = sourceList.filter(
-                (item) => item.category === category,
-            );
-            setSelectedCategoryList(filteredItems);
-        }
-    };
-
-    const handleFilterByShop = (shopId) => {
-        const filteredItems = itemsInMyCity.filter(
-            (item) => item?.shop?._id === shopId,
-        );
-        setSelectedCategoryList(filteredItems);
-    };
-
-    // SCROLL REFS
     const categoryScrollRef = useRef(null);
     const shopScrollRef = useRef(null);
 
-    // CATEGORY SCROLL
-    const scrollCategoryLeft = () => {
-        categoryScrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
+    const sourceList = userData ? itemsInMyCity : rawGuestItems;
+    const visibleItems = isSearching ? searchItems : selectedCategoryList;
+    const showLoading = !userData && loadingGuestItems;
+
+    const handleFilterByCategory = (selectedCategory) => {
+        setActiveCategory(selectedCategory);
+        if (selectedCategory === "All") {
+            setSelectedCategoryList(sourceList);
+            return;
+        }
+
+        setSelectedCategoryList(
+            sourceList.filter((item) => item.category === selectedCategory),
+        );
     };
 
-    const scrollCategoryRight = () => {
-        categoryScrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
+    const handleFilterByShop = (shopId) => {
+        setActiveCategory("All");
+        setSelectedCategoryList(
+            itemsInMyCity.filter((item) => item?.shop?._id === shopId),
+        );
     };
 
-    // SHOP SCROLL
-    const scrollShopLeft = () => {
-        shopScrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
+    const scroll = (ref, direction) => {
+        ref.current?.scrollBy({
+            left: direction === "left" ? -260 : 260,
+            behavior: "smooth",
+        });
     };
-
-    const scrollShopRight = () => {
-        shopScrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
-    };
-
-    const showSearchResults = searchItems && searchItems.length > 0;
-    const showNoSearchResult = searchItems && searchItems.length === 0;
 
     useEffect(() => {
         if (!isSearching) {
-            setSelectedCategoryList(itemsInMyCity);
+            setSelectedCategoryList(sourceList);
         }
-    }, [itemsInMyCity, isSearching]);
+    }, [itemsInMyCity, rawGuestItems, isSearching, userData]);
 
     useEffect(() => {
         const fetchGuestItems = async () => {
-            if (!userData) {
-                try {
-                    const res = await axios.get(
-                        `${serverUrl}/api/item/guest-items`,
-                    );
-                    setRawGuestItems(res.data.data);
-                    setSelectedCategoryList(res.data.data);
-                } catch (error) {
-                    console.error("Failed to fetch guest items: ", error);
-                }
+            if (userData) return;
+            try {
+                setLoadingGuestItems(true);
+                const res = await axios.get(`${serverUrl}/api/item/guest-items`);
+                setRawGuestItems(res.data.data || []);
+                setSelectedCategoryList(res.data.data || []);
+            } catch (error) {
+                console.error("Failed to fetch guest items: ", error);
+            } finally {
+                setLoadingGuestItems(false);
             }
         };
+
         fetchGuestItems();
     }, [userData]);
 
     return (
-        <div className="w-full min-h-screen bg-white flex flex-col items-center">
+        <div className="app-shell w-full pb-16">
             <Navbar />
 
-            {/* CATEGORY */}
-            <div className="w-full max-w-7xl px-5 mt-10 md:mt-17 relative">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                        {userData?.data?.fullName
-                            ? `${userData.data.fullName}, what's in your mind today?`
-                            : "What's in your mind today?"}
-                        😋
-                    </h2>
-
-                    <div className="hidden md:flex gap-3">
-                        <button
-                            onClick={scrollCategoryLeft}
-                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
-                        >
-                            <FaChevronLeft size={14} className="md:text-base" />
-                        </button>
-
-                        <button
-                            onClick={scrollCategoryRight}
-                            className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
-                        >
-                            <FaChevronRight
-                                size={14}
-                                className="md:text-base"
-                            />
-                        </button>
-                    </div>
-                </div>
-
-                {/* CATEGORY STRIP */}
-                <div
-                    ref={categoryScrollRef}
-                    className="flex gap-10 overflow-x-auto scrollbar-hide scroll-smooth py-2"
+            <main className="mx-auto w-full max-w-7xl px-4 pt-24 md:px-5 md:pt-28">
+                {/* ── Hero Section ── */}
+                <motion.section
+                    initial="hidden"
+                    animate="visible"
+                    variants={staggerContainer}
+                    className="grid gap-5 lg:grid-cols-[1.25fr_0.75fr]"
                 >
-                    {category.map((cate, index) => (
-                        <CategoryCard
-                            key={index}
-                            data={cate}
-                            onClick={() =>
-                                handleFilterByCategory(cate.category)
-                            }
-                        />
-                    ))}
-                </div>
-            </div>
-            {/* BEST SHOPS */}
-            {userData && (
-                <div className="w-full max-w-7xl px-5 mt-10 md:mt-17 relative">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900">
-                            Best Shops in {city}
+                    <motion.div variants={fadeInUp} transition={{ duration: 0.5 }}>
+                        <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[var(--brand)]">
+                            <LuSparkles className="size-4" />
+                            Fast local cravings
+                        </p>
+                        <h1 className="max-w-3xl text-3xl font-black tracking-tight text-gray-950 sm:text-4xl lg:text-5xl lg:leading-[1.1]">
+                            {userData?.data?.fullName
+                                ? `${userData.data.fullName}, what sounds good today?`
+                                : "Fresh food, nearby shops, zero friction."}
+                        </h1>
+                        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-gray-500 sm:text-base">
+                            Browse dishes, add favorites to cart, pick an exact
+                            delivery pin, and follow the order flow in real
+                            time.
+                        </p>
+                    </motion.div>
+
+                    <motion.div
+                        variants={fadeInUp}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        className="panel flex items-center justify-between rounded-3xl p-5"
+                    >
+                        <div>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                Delivering around
+                            </p>
+                            <p className="mt-1.5 flex items-center gap-2 text-lg font-black text-gray-950">
+                                <LuMapPin className="text-[var(--brand)]" />
+                                {city || "your location"}
+                            </p>
+                        </div>
+                        <div className="rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100/50 px-4 py-3 text-right">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                                Available
+                            </p>
+                            <p className="text-2xl font-black text-[var(--brand)]">
+                                {sourceList?.length || 0}
+                            </p>
+                        </div>
+                    </motion.div>
+                </motion.section>
+
+                {/* ── Categories ── */}
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.15 }}
+                    className="mt-10"
+                >
+                    <div className="mb-5 flex items-center justify-between">
+                        <h2 className="text-xl font-black text-gray-950 sm:text-2xl">
+                            Explore categories
                         </h2>
-                        {/* <button onClick={() => navigate("shop-view/6986d4fb8c0f5fd125e2555d")}>new shop</button> */}
-
-                        <div className="hidden md:flex gap-3">
+                        <div className="hidden gap-2 md:flex">
                             <button
-                                onClick={scrollShopLeft}
-                                className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
+                                onClick={() => scroll(categoryScrollRef, "left")}
+                                className="btn-ghost flex size-9 items-center justify-center rounded-full"
                             >
-                                <FaChevronLeft
-                                    size={14}
-                                    className="md:text-base"
-                                />
+                                <FaChevronLeft size={11} />
                             </button>
-
                             <button
-                                onClick={scrollShopRight}
-                                className="bg-gray-200 hover:bg-gray-300 p-1.5 md:p-2 rounded-full"
+                                onClick={() => scroll(categoryScrollRef, "right")}
+                                className="btn-ghost flex size-9 items-center justify-center rounded-full"
                             >
-                                <FaChevronRight
-                                    size={14}
-                                    className="md:text-base"
-                                />
+                                <FaChevronRight size={11} />
                             </button>
                         </div>
                     </div>
 
-                    {/* SHOP STRIP */}
                     <div
-                        ref={shopScrollRef}
-                        className="flex gap-10 overflow-x-auto scrollbar-hide scroll-smooth py-2"
+                        ref={categoryScrollRef}
+                        className="scrollbar-hide flex gap-3 overflow-x-auto scroll-smooth py-2 sm:gap-4"
                     >
-                        {shopsInMyCity &&
-                            shopsInMyCity.length > 0 &&
-                            shopsInMyCity.map((shop, index) => (
+                        {category.map((cate) => (
+                            <CategoryCard
+                                key={cate.category}
+                                data={cate}
+                                isActive={activeCategory === cate.category}
+                                onClick={() =>
+                                    handleFilterByCategory(cate.category)
+                                }
+                            />
+                        ))}
+                    </div>
+                </motion.section>
+
+                {/* ── Shops ── */}
+                {userData && (
+                    <motion.section
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.25 }}
+                        className="mt-10"
+                    >
+                        <div className="mb-5 flex items-center justify-between">
+                            <h2 className="text-xl font-black text-gray-950 sm:text-2xl">
+                                Best shops {city ? `in ${city}` : "near you"}
+                            </h2>
+                            <div className="hidden gap-2 md:flex">
+                                <button
+                                    onClick={() => scroll(shopScrollRef, "left")}
+                                    className="btn-ghost flex size-9 items-center justify-center rounded-full"
+                                >
+                                    <FaChevronLeft size={11} />
+                                </button>
+                                <button
+                                    onClick={() => scroll(shopScrollRef, "right")}
+                                    className="btn-ghost flex size-9 items-center justify-center rounded-full"
+                                >
+                                    <FaChevronRight size={11} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div
+                            ref={shopScrollRef}
+                            className="scrollbar-hide flex gap-4 overflow-x-auto scroll-smooth py-2"
+                        >
+                            {shopsInMyCity?.map((shop, index) => (
                                 <ShopsInMyCityCard
                                     onClick={() => handleFilterByShop(shop._id)}
                                     key={shop._id || index}
@@ -194,64 +255,79 @@ const UserDashboard = () => {
                                     image={shop.image}
                                 />
                             ))}
-                        <div
-                            onClick={() =>
-                                setSelectedCategoryList(itemsInMyCity)
-                            }
-                            className="flex flex-col items-center shrink-0 cursor-pointer group"
-                        >
-                            <div
-                                className="w-[90px] h-[90px] sm:w-[105px] sm:h-[105px] md:w-[120px] md:h-[120px]
-                    rounded-xl overflow-hidden bg-white shadow-md
-                    group-hover:shadow-xl transition"
+                            <button
+                                onClick={() => setSelectedCategoryList(itemsInMyCity)}
+                                className="group flex w-24 shrink-0 flex-col items-center sm:w-28"
                             >
-                                <img
-                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIeaFxft3L8b0IPngXWlPR0mP5qY-2Rbsc0zQLF9OZmQ&s"
-                                    className="w-full h-full object-cover group-hover:scale-105 transition"
-                                />
-                            </div>
+                                <div className="soft-card flex aspect-square w-full items-center justify-center rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100/50 text-sm font-black text-[var(--brand)]">
+                                    All
+                                </div>
+                                <span className="mt-2 text-xs font-bold text-gray-700 sm:text-sm">
+                                    All shops
+                                </span>
+                            </button>
+                        </div>
+                    </motion.section>
+                )}
 
-                            <p className=" mt-2 text-sm sm:text-base font-medium text-gray-700 text-center w-[90px] leading-tight line-clamp-2">
-                                All Shops
+                {/* ── Food Grid ── */}
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="mt-10"
+                >
+                    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <h2 className="flex items-center gap-2 text-xl font-black text-gray-950 sm:text-2xl">
+                                {isSearching ? (
+                                    "Search results"
+                                ) : (
+                                    <>
+                                        <LuTrendingUp className="text-[var(--brand)]" />
+                                        Suggested for you
+                                    </>
+                                )}
+                            </h2>
+                            <p className="mt-1 text-sm text-gray-500">
+                                {isSearching
+                                    ? "Matching dishes from your current search."
+                                    : "Handy picks based on what is available now."}
                             </p>
                         </div>
                     </div>
-                </div>
-            )}
-            {/* PRODUCT */}
-            <div className="w-full max-w-7xl px-5 mt-10">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    {isSearching
-                        ? "Search Results 🍽️"
-                        : "Suggested foods for you 😋"}
-                </h2>
 
-                {/* 🔍 WHEN SEARCHING */}
-                {isSearching ? (
-                    searchItems.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {" "}
-                            {searchItems.map((item) => (
-                                <FoodCard key={item._id} data={item} />
+                    {showLoading ? (
+                        <FoodSkeletonGrid />
+                    ) : visibleItems?.length > 0 ? (
+                        <motion.div
+                            variants={staggerContainer}
+                            initial="hidden"
+                            animate="visible"
+                            className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4"
+                        >
+                            {visibleItems.map((item) => (
+                                <motion.div key={item._id} variants={fadeInUp} transition={{ duration: 0.35 }}>
+                                    <FoodCard data={item} />
+                                </motion.div>
                             ))}
-                        </div>
+                        </motion.div>
                     ) : (
-                        <div className="flex justify-center items-center h-[40vh]">
-                            <h2 className="text-xl font-semibold text-gray-400">
-                                Food Not Found...!
-                            </h2>
+                        <div className="panel flex min-h-[280px] flex-col items-center justify-center rounded-3xl px-6 text-center">
+                            <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-orange-50">
+                                <LuSearchX className="size-8 text-[var(--brand)]" />
+                            </div>
+                            <h3 className="text-xl font-black text-gray-950">
+                                No food found
+                            </h3>
+                            <p className="mt-2 max-w-md text-sm text-gray-500">
+                                Try another search, pick a different category,
+                                or update your location.
+                            </p>
                         </div>
-                    )
-                ) : (
-                    /* 🏠 NORMAL DASHBOARD */
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {" "}
-                        {selectedCategoryList.map((item) => (
-                            <FoodCard key={item._id} data={item} />
-                        ))}
-                    </div>
-                )}
-            </div>
+                    )}
+                </motion.section>
+            </main>
         </div>
     );
 };

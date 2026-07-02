@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import axios from "axios";
-import { serverUrl } from "../App";
+import { serverUrl } from "../config/api";
 import { useDispatch, useSelector } from "react-redux";
 import { setShopsInMyCity } from "../redux/userSlice";
 

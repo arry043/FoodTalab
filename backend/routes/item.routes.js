@@ -16,7 +16,7 @@ const itemRouter = express.Router();
 
 itemRouter.post("/add-item", isAuth, upload.single("image"), addItem);
 itemRouter.put("/edit-item/:itemId", isAuth, upload.single("image"), editItem);
-itemRouter.get("/get-item-by-id/:itemId", isAuth, getItemById);
+itemRouter.get("/get-item-by-id/:itemId", getItemById);
 itemRouter.delete("/delete-item/:itemId", isAuth, deleteItem);
 itemRouter.get("/getitembycity/:city", isAuth, getItemsByCity);
 itemRouter.get("/search-items", searchItems);

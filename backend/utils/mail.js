@@ -27,6 +27,21 @@ export const sendOtp = async (to, otp) => {
     }
 };
 
+export const sendSignupOtp = async (to, otp) => {
+    try {
+        await transporter.sendMail({
+            from: process.env.EMAIL,
+            to,
+            subject: "Verify your email for FoodTalab",
+            text: `Your verification code is ${otp}. Use this code to verify your email address and continue setting up your account. \n \n If you didn't request this, please ignore this email. \n \n This OTP will expire in 5 minutes.`,
+        });
+        console.log("Signup OTP email sent to:", to);
+    } catch (error) {
+        console.error("MAIL ERROR:", error);
+        throw error;
+    }
+};
+
 
 export const sendOtpDelivery = async (user, otp) => {
     try {

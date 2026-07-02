@@ -1,7 +1,12 @@
 import User from "../models/user.model.js";
+import Otp from "../models/otp.model.js";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/token.js";
-import { sendOtp } from "../utils/mail.js";
+import { sendOtp, sendSignupOtp } from "../utils/mail.js";
+import {
+    authCookieOptions,
+    clearAuthCookieOptions,
+} from "../config/cookies.js";
 
 export const signUp = async (req, res) => {
     try {
@@ -45,6 +50,12 @@ export const signUp = async (req, res) => {
                 .json({ message: "Mobile number already registered" });
         }
 
+        // Email Verification check
+        const verifiedRecord = await Otp.findOne({ email, isVerified: true });
+        if (!verifiedRecord) {
+            return res.status(400).json({ message: "Email has not been verified yet" });
+        }
+
         let user = await User.findOne({ email }); 
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -56,13 +67,11 @@ export const signUp = async (req, res) => {
             role,
         });
 
+        // Clean up OTP record
+        await Otp.deleteOne({ email });
+
         const token = await generateToken(user._id);
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            maxAge: 24 * 60 * 60 * 1000,
-        });
+        res.cookie("token", token, authCookieOptions);
 
         return res
             .status(201)
@@ -97,12 +106,7 @@ export const signIn = async (req, res) => {
 
         const token = await generateToken(user._id);
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            maxAge: 24 * 60 * 60 * 1000,
-        });
+        res.cookie("token", token, authCookieOptions);
 
         return res.status(200).json({
             data: user,
@@ -116,11 +120,7 @@ export const signIn = async (req, res) => {
 
 export const signOut = async (req, res) => {
     try {
-        res.clearCookie("token", {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-        });
+        res.clearCookie("token", clearAuthCookieOptions);
 
         return res.status(200).json({
             message: "Logout successfully",
@@ -161,7 +161,7 @@ export const varifyOTP = async (req, res) => {
         if (!user) {
             return res.status(400).json({ message: "User does not exist" });
         }
-        if (user.resetOtp !== otp) {
+        if (String(user.resetOtp) !== String(otp)) {
             return res.status(400).json({ message: "Invalid OTP" });
         }
         if (user.otpExpires < Date.now()) {
@@ -176,6 +176,61 @@ export const varifyOTP = async (req, res) => {
         return res
             .status(500)
             .json({ message: "Server Error: varifyOTP", error });
+    }
+};
+
+export const sendSignupOTP = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+        const user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ message: "Email already registered" });
+        }
+        
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+        await Otp.findOneAndUpdate(
+            { email },
+            { otp, expiresAt, isVerified: false },
+            { upsert: true, new: true }
+        );
+
+        await sendSignupOtp(email, otp);
+        return res.status(200).json({ message: "Verification OTP sent successfully" });
+    } catch (error) {
+        console.error("SEND SIGNUP OTP ERROR:", error);
+        return res.status(500).json({ message: "Server Error: sendSignupOTP", error });
+    }
+};
+
+export const verifySignupOTP = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ message: "Email and OTP are required" });
+        }
+        const record = await Otp.findOne({ email });
+        if (!record) {
+            return res.status(400).json({ message: "Verification OTP not found or expired" });
+        }
+        if (record.expiresAt < Date.now()) {
+            return res.status(400).json({ message: "Verification OTP expired" });
+        }
+        if (String(record.otp) !== String(otp)) {
+            return res.status(400).json({ message: "Invalid verification code" });
+        }
+
+        record.isVerified = true;
+        await record.save();
+
+        return res.status(200).json({ message: "Email verified successfully" });
+    } catch (error) {
+        console.error("VERIFY SIGNUP OTP ERROR:", error);
+        return res.status(500).json({ message: "Server Error: verifySignupOTP", error });
     }
 };
 
@@ -215,12 +270,7 @@ export const googleAuth = async (req, res) => {
 
         const token = await generateToken(user._id);
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            maxAge: 24 * 60 * 60 * 1000,
-        });
+        res.cookie("token", token, authCookieOptions);
 
         return res.status(200).json({
             data: user,

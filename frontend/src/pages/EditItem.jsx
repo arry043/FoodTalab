@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import axios from "axios";
-import { serverUrl } from "../App";
+import { serverUrl } from "../config/api";
 import { useDispatch, useSelector } from "react-redux";
 import { setMyShopData } from "../redux/ownerSlice"; 
 import { ClipLoader } from "react-spinners";

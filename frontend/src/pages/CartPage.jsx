@@ -1,17 +1,21 @@
-import React, { useEffect } from "react";
-import { IoIosArrowRoundBack } from "react-icons/io";
-import { TbTrashXFilled } from "react-icons/tb";
-import Navbar from "../components/Navbar";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { MdOutlineAddShoppingCart } from "react-icons/md";
+import { IoIosArrowRoundBack } from "react-icons/io";
+import { LuMinus, LuPlus, LuShoppingBag, LuTrash2, LuArrowRight } from "react-icons/lu";
+import { motion, AnimatePresence } from "framer-motion";
+import Navbar from "../components/Navbar";
 import {
     addToCart,
     removeFromCart,
     removeItemCompletelyFromCart,
-    setDelivaryFee,
 } from "../redux/userSlice";
 
+const pageVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, transition: { duration: 0.2 } },
+};
 
 function CartPage() {
     const navigate = useNavigate();
@@ -20,187 +24,243 @@ function CartPage() {
         (state) => state.user,
     );
 
+    const toPay = totalAmount + delivaryFee;
+    const freeDeliveryGap = Math.max(0, 501 - totalAmount);
+    const freeDeliveryProgress = Math.min(100, (totalAmount / 501) * 100);
+
     return (
-        <div className="min-h-screen bg-[#fff9f6]">
+        <motion.div {...pageVariants} className="app-shell min-h-screen pb-24">
             <Navbar />
 
-            <div className="flex justify-center px-4 pb-24">
-                <div className="w-full md:mt-20 mt-12 max-w-3xl">
-                    {/* 🔙 BACK */}
+            <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 pt-24 md:grid-cols-[1fr_340px] md:px-5 md:pt-28 lg:grid-cols-[1fr_380px]">
+                <section>
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center mt-5 gap-1 text-[#ff4d2d] mb-4"
+                        className="mb-5 flex items-center gap-1 text-sm font-black text-[var(--brand)] transition-all hover:gap-2"
                     >
-                        <IoIosArrowRoundBack size={30} />
-                        <span className="font-medium">Back</span>
+                        <IoIosArrowRoundBack size={26} />
+                        Back
                     </button>
 
-                    {/* 🛒 TITLE */}
-                    <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
+                    <div className="mb-6">
+                        <h1 className="text-3xl font-black text-gray-950">
+                            Your cart
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500">
+                            {cartItems.length > 0
+                                ? `${cartItems.length} item${cartItems.length > 1 ? "s" : ""} — review and checkout`
+                                : "Your cart is empty"}
+                        </p>
+                    </div>
 
-                    {/* EMPTY CART */}
                     {cartItems.length === 0 ? (
-                        <div className="bg-white p-10 rounded-xl flex flex-col items-center shadow text-center">
-                            <MdOutlineAddShoppingCart
-                                size={100}
-                                className="mb-7 text-[#ff4d2d]"
-                            />
-                            <p className="text-gray-500 text-2xl">
-                                Your cart is empty 😢
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="panel flex min-h-[400px] flex-col items-center justify-center rounded-3xl px-6 text-center"
+                        >
+                            <motion.div
+                                className="mb-5 flex size-20 items-center justify-center rounded-full bg-orange-50 text-[var(--brand)]"
+                                animate={{ y: [0, -6, 0] }}
+                                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                            >
+                                <LuShoppingBag size={36} />
+                            </motion.div>
+                            <h2 className="text-2xl font-black text-gray-950">
+                                Your cart is empty
+                            </h2>
+                            <p className="mt-2 max-w-md text-sm leading-6 text-gray-500">
+                                Add something tasty from nearby shops and it will
+                                appear here.
                             </p>
                             <Link
-                                to={"/"}
-                                className="h-full px-4 mt-5 py-2 text-md font-semibold rounded-full border border-[#ff4d2d] text-[#ff4d2d] hover:bg-[#ff4d2d] hover:text-white transition"
+                                to="/"
+                                className="btn-primary mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-black"
                             >
-                                Add Items
+                                Browse foods
+                                <LuArrowRight size={16} />
                             </Link>
-                        </div>
+                        </motion.div>
                     ) : (
-                        <>
-                            {/* 🧾 CART ITEMS */}
-                            <div className="bg-white rounded-xl shadow divide-y">
+                        <div className="space-y-3">
+                            <AnimatePresence mode="popLayout">
                                 {cartItems.map((item) => (
-                                    <div
+                                    <motion.article
                                         key={item.id}
-                                        className="flex items-center gap-4 p-4"
+                                        layout
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, x: -80, transition: { duration: 0.25 } }}
+                                        className="soft-card grid grid-cols-[72px_1fr] gap-3 rounded-2xl p-3 sm:grid-cols-[96px_1fr_auto] sm:gap-4"
                                     >
-                                        {/* IMAGE */}
                                         <img
                                             src={item.image}
                                             alt={item.name}
-                                            className="w-20 h-20 rounded-lg object-cover"
+                                            className="h-[72px] w-[72px] rounded-xl object-cover sm:h-24 sm:w-24 sm:rounded-2xl"
                                         />
 
-                                        {/* INFO */}
-                                        <div className="flex-1">
-                                            <h3 className="font-semibold text-gray-800 line-clamp-1">
+                                        <div className="min-w-0">
+                                            <h3 className="line-clamp-1 text-sm font-black text-gray-950 sm:text-base">
                                                 {item.name}
                                             </h3>
-                                            <p className="text-sm text-gray-500">
+                                            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-400 sm:text-xs">
                                                 {item.foodType}
                                             </p>
-
-                                            <p className="text-[#ff4d2d] text-xl font-bold mt-1 flex flex-col md:flex-row items-baseline gap-2">
+                                            <p className="mt-2 text-base font-black text-[var(--brand)] sm:mt-3 sm:text-lg">
                                                 ₹{item.price * item.quantity}
-                                                <span className="text-[11px] text-gray-500">
-                                                    ({item.price} x{" "}
-                                                    {item.quantity})
+                                                <span className="ml-2 text-[10px] font-semibold text-gray-400 sm:text-xs">
+                                                    (₹{item.price} × {item.quantity})
                                                 </span>
                                             </p>
                                         </div>
 
-                                        {/* ✅ QTY CONTROL */}
-                                        <div
-                                            className="flex items-center gap-3 border border-[#ff4d2d]
-            rounded-full px-3 py-1 text-[#ff4d2d] font-semibold"
-                                        >
-                                            <button
-                                                className="text-lg"
+                                        <div className="col-span-2 flex items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end">
+                                            <div className="flex h-9 items-center gap-2 rounded-full border border-[var(--brand)]/30 bg-orange-50 px-1.5 text-[var(--brand)] sm:gap-3 sm:px-2 sm:h-10">
+                                                <motion.button
+                                                    type="button"
+                                                    className="flex size-6 items-center justify-center rounded-full bg-white shadow-sm sm:size-7"
+                                                    onClick={() =>
+                                                        dispatch(
+                                                            removeFromCart(item.id),
+                                                        )
+                                                    }
+                                                    whileTap={{ scale: 0.85 }}
+                                                >
+                                                    <LuMinus size={13} />
+                                                </motion.button>
+                                                <AnimatePresence mode="wait">
+                                                    <motion.span
+                                                        key={item.quantity}
+                                                        initial={{ y: -6, opacity: 0 }}
+                                                        animate={{ y: 0, opacity: 1 }}
+                                                        exit={{ y: 6, opacity: 0 }}
+                                                        className="min-w-4 text-center text-sm font-black"
+                                                    >
+                                                        {item.quantity}
+                                                    </motion.span>
+                                                </AnimatePresence>
+                                                <motion.button
+                                                    type="button"
+                                                    className="flex size-6 items-center justify-center rounded-full bg-white shadow-sm sm:size-7"
+                                                    onClick={() =>
+                                                        dispatch(
+                                                            addToCart({
+                                                                id: item.id,
+                                                                name: item.name,
+                                                                price: item.price,
+                                                                image: item.image,
+                                                                shop: item.shop,
+                                                                foodType:
+                                                                    item.foodType,
+                                                            }),
+                                                        )
+                                                    }
+                                                    whileTap={{ scale: 0.85 }}
+                                                >
+                                                    <LuPlus size={13} />
+                                                </motion.button>
+                                            </div>
+
+                                            <motion.button
+                                                type="button"
                                                 onClick={() =>
-                                                    dispatch(
-                                                        removeFromCart(item.id),
-                                                    )
-                                                }
-                                            >
-                                                −
-                                            </button>
-
-                                            <span>{item.quantity}</span>
-
-                                            <button
-                                                className="text-lg"
-                                                onClick={() =>
-                                                    dispatch(
-                                                        addToCart({
-                                                            id: item.id,
-                                                            name: item.name,
-                                                            price: item.price,
-                                                            image: item.image,
-                                                            shop: item.shop,
-                                                            foodType:
-                                                                item.foodType,
-                                                        }),
-                                                    )
-                                                }
-                                            >
-                                                +
-                                            </button>
-                                        </div>
-
-                                        {/* 🗑 REMOVE COMPLETELY */}
-                                        <button
-                                            onClick={() => {
-                                                for (
-                                                    let i = 0;
-                                                    i < item.quantity;
-                                                    i++
-                                                ) {
                                                     dispatch(
                                                         removeItemCompletelyFromCart(
                                                             item.id,
                                                         ),
-                                                    );
+                                                    )
                                                 }
-                                            }}
-                                            className="p-2 rounded-full bg-red-50 hover:bg-red-100
-            border border-red-200 hover:border-red-300 transition"
-                                        >
-                                            <TbTrashXFilled
-                                                size={22}
-                                                className="text-red-500"
-                                            />
-                                        </button>
-                                    </div>
+                                                className="flex size-9 items-center justify-center rounded-full bg-red-50 text-red-500 transition-all hover:bg-red-100 hover:shadow-md sm:size-10"
+                                                aria-label="Remove item"
+                                                whileTap={{ scale: 0.85 }}
+                                            >
+                                                <LuTrash2 size={16} />
+                                            </motion.button>
+                                        </div>
+                                    </motion.article>
                                 ))}
-                            </div>
-                            <div className="text-gray-500 mt-2 text-sm">
-                                Add foods worth more than ₹499 to get free
-                                delivery
-                            </div>
-
-                            {/* 💰 BILL SUMMARY */}
-                            <div className="bg-white rounded-xl shadow mt-6 p-5 space-y-3">
-                                <div className="flex justify-between text-gray-600">
-                                    <span>Item Total</span>
-                                    <span>₹{totalAmount}</span>
-                                </div>
-
-                                <div className="flex justify-between text-gray-600">
-                                    <span>Delivery Fee</span>
-                                    <span className="flex items-center gap-2">
-                                        {delivaryFee === 0 ? (
-                                            <>
-                                                <span className="line-through text-gray-400">
-                                                    ₹49
-                                                </span>
-                                                <span className="text-green-600 font-semibold">
-                                                    Free
-                                                </span>
-                                            </>
-                                        ) : (
-                                            <span>₹{delivaryFee}</span>
-                                        )}
-                                    </span>
-                                </div>
-
-                                <div className="border-t pt-3 flex justify-between font-bold text-lg">
-                                    <span>To Pay</span>
-                                    <span>₹{totalAmount + delivaryFee}</span>
-                                </div>
-                            </div>
-
-                            {/* ✅ CHECKOUT */}
-                            <button
-                                onClick={() => navigate("/checkout")}
-                                className="w-full mt-6 bg-[#ff4d2d] text-white py-3 rounded-xl font-semibold text-lg hover:bg-[#e64528] transition"
-                            >
-                                Proceed to Checkout
-                            </button>
-                        </>
+                            </AnimatePresence>
+                        </div>
                     )}
-                </div>
-            </div>
-        </div>
+                </section>
+
+                {cartItems.length > 0 && (
+                    <motion.aside
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 }}
+                        className="panel h-fit rounded-3xl p-5 md:sticky md:top-24"
+                    >
+                        <h2 className="text-xl font-black text-gray-950">
+                            Bill summary
+                        </h2>
+
+                        {/* Free delivery progress */}
+                        <div className="mt-4">
+                            {freeDeliveryGap > 0 ? (
+                                <div className="rounded-2xl bg-orange-50 p-4">
+                                    <p className="text-xs font-bold text-orange-800">
+                                        Add ₹{freeDeliveryGap} more for free delivery
+                                    </p>
+                                    <div className="progress-bar mt-2">
+                                        <motion.div
+                                            className="progress-bar-fill"
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${freeDeliveryProgress}%` }}
+                                            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="rounded-2xl bg-green-50 p-4 text-sm font-bold text-green-700">
+                                    🎉 Free delivery unlocked!
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-5 space-y-3 text-sm">
+                            <div className="flex justify-between text-gray-600">
+                                <span>Item total</span>
+                                <span className="font-semibold">₹{totalAmount}</span>
+                            </div>
+                            <div className="flex justify-between text-gray-600">
+                                <span>Delivery fee</span>
+                                <span className="font-semibold">
+                                    {delivaryFee === 0 ? (
+                                        <span className="text-green-600">Free</span>
+                                    ) : (
+                                        `₹${delivaryFee}`
+                                    )}
+                                </span>
+                            </div>
+                            <div className="border-t border-orange-100 pt-4">
+                                <div className="flex justify-between text-lg font-black text-gray-950">
+                                    <span>To pay</span>
+                                    <motion.span
+                                        key={toPay}
+                                        initial={{ scale: 1.1 }}
+                                        animate={{ scale: 1 }}
+                                        className="text-[var(--brand)]"
+                                    >
+                                        ₹{toPay}
+                                    </motion.span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <motion.button
+                            onClick={() => navigate("/checkout")}
+                            className="btn-primary mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-black"
+                            whileTap={{ scale: 0.97 }}
+                            whileHover={{ scale: 1.01 }}
+                        >
+                            Proceed to checkout
+                            <LuArrowRight size={16} />
+                        </motion.button>
+                    </motion.aside>
+                )}
+            </main>
+        </motion.div>
     );
 }
 

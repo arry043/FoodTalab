@@ -87,6 +87,11 @@ const userSlice = createSlice({
         removeItemCompletelyFromCart: (state, action) => {
             const id = action.payload;
             state.cartItems = state.cartItems.filter((i) => i.id !== id);
+            state.totalAmount = state.cartItems.reduce(
+                (sum, item) => sum + item.price * item.quantity,
+                0,
+            );
+            state.delivaryFee = state.totalAmount > 500 ? 0 : 49;
         },
         setMyOrders: (state, action) => {
             state.myOrders = action.payload;
@@ -114,7 +119,12 @@ const userSlice = createSlice({
         },
         setSocket: (state, action) => {
             state.socket = action.payload;
-        }
+        },
+        clearCart: (state) => {
+            state.cartItems = [];
+            state.totalAmount = 0;
+            state.delivaryFee = 49;
+        },
     },
 });
 
@@ -136,5 +146,6 @@ export const {
     setSearchItems,
     setIsSearching,
     setSocket,
+    clearCart,
 } = userSlice.actions;
 export default userSlice.reducer;

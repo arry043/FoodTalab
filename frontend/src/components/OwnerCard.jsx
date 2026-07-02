@@ -1,32 +1,38 @@
 import React from "react";
 import { FaUserTie, FaEnvelope } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 const OwnerCard = ({ owner }) => {
+    if (!owner) return null;
+
     return (
-        <div className="max-w-7xl mx-auto px-5 mt-8">
-            <div
-                className="bg-white rounded-2xl shadow-md
-                p-5 flex flex-col sm:flex-row gap-4
-                items-start sm:items-center"
+        <div className="mx-auto mt-6 w-full max-w-7xl px-4 sm:px-5">
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center"
             >
                 <div
-                    className="w-14 h-14 rounded-full bg-[#ff4d2d]
-                    flex items-center justify-center text-white text-xl"
+                    className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand)] text-white text-lg shadow-md shadow-orange-100"
                 >
                     <FaUserTie />
                 </div>
 
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-800">
+                <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        Shop partner
+                    </p>
+                    <h3 className="text-base font-black text-gray-900 mt-0.5">
                         {owner.fullName}
                     </h3>
 
-                    <p className="text-sm text-gray-500 flex items-center gap-2">
-                        <FaEnvelope />
+                    <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                        <FaEnvelope className="text-gray-400" />
                         {owner.email}
                     </p>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 };

@@ -1,311 +1,428 @@
-import { IoIosArrowRoundBack } from "react-icons/io";
-import { useState } from "react";
-import { GiSunkenEye } from "react-icons/gi";
-import { GiEyelashes } from "react-icons/gi";
-import { FcGoogle } from "react-icons/fc";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { serverUrl } from "../App";
+import { LuArrowLeft, LuCheck, LuLock, LuMail } from "react-icons/lu";
+import { ImSpinner2 } from "react-icons/im";
+import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
+import { serverUrl } from "../config/api";
 
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { ClipLoader } from "react-spinners";
+const pageVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, transition: { duration: 0.2 } },
+};
 
-const ForgotPassword = () => {
-    const primaryColor = "#f25a13";
-    // const primaryColor="#ff4d2d"
-    // const hoverColor = "#e64323";
-    const bgColor = "#fff9f6";
-    const borderColor = "#ddd";
+const stepLabels = ["Enter email", "Verify OTP", "New password"];
 
+function ForgotPassword() {
     const navigate = useNavigate();
-    const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState("");
     const [step, setStep] = useState(1);
-    const [otp, setOtp] = useState("");
+    const [email, setEmail] = useState("");
+    const [otp, setOtp] = useState(["", "", "", ""]);
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [loader, setLoader] = useState(false);
+    const [shakeError, setShakeError] = useState(false);
 
+    // Resend timer
+    const [resendTimer, setResendTimer] = useState(0);
 
-    const handleSendOtp = async (e) => {
-        e.preventDefault();
-        setLoader(true);
-        try {
-            const result = await axios.post(
-                `${serverUrl}/api/auth/send-otp`,
-                {
-                    email,
-                },
-                { withCredentials: true },
-            );
-            console.log(result);
-            setStep(2);
-            alert(
-                "Otp sent successfully, please check your email and enter the otp",
-            );
-            setError("");
-            setLoader(false);
-            toast.success("Otp sent successfully");
-        } catch (error) {
-            setLoader(false);
-            setError(error.response?.data?.message);
-            toast.error(error.response?.data?.message);
+    const otpRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+
+    useEffect(() => {
+        if (resendTimer > 0) {
+            const interval = setInterval(() => setResendTimer((t) => t - 1), 1000);
+            return () => clearInterval(interval);
         }
+    }, [resendTimer]);
+
+    const triggerShake = () => {
+        setShakeError(true);
+        setTimeout(() => setShakeError(false), 500);
     };
 
-    const handleVarifyOtp = async (e) => {
-        e.preventDefault();
-        setLoader(true);
-        try {
-            const result = await axios.post(
-                `${serverUrl}/api/auth/varify-otp`,
-                {
-                    email,
-                    otp,
-                },
-                { withCredentials: true },
-            );
-            console.log(result);
-            toast.success("Otp varified successfully");
-            setStep(3);
-            setError("");
-            setLoader(false);
-        } catch (error) {
-            setError(error.response?.data?.message);
-            setLoader(false);
-            toast.error(error.response?.data?.message);
-        }
-    };
-
-    const handleResetPassword = async (e) => {
-        e.preventDefault();
-        setLoader(true);
-        if (newPassword !== confirmPassword) {
-            setError("Passwords do not match");
-            toast.error("Passwords do not match");
-            setLoader(false);
+    // ──────────── Step 1: Send OTP ────────────
+    const handleSendOTP = async (e) => {
+        e?.preventDefault();
+        if (!email.trim()) {
+            setError("Please enter your email.");
+            triggerShake();
             return;
         }
+
+        setLoading(true);
+        setError("");
         try {
-            const result = await axios.post(
-                `${serverUrl}/api/auth/reset-password`,
-                {
-                    email,
-                    newPassword,
-                },
-                { withCredentials: true },
-            );
-            console.log(result);
-            toast.success("Password reset successful");
-            alert("Password reset successful");
-            navigate("/signin");
-            setError("");
-            setLoader(false);
-        } catch (error) {
-            setError(error.response?.data?.message);
-            setLoader(false);
-            toast.error(error.response?.data?.message);
+            await axios.post(`${serverUrl}/api/auth/send-otp`, { email });
+            toast.success("OTP sent to your email");
+            setStep(2);
+            setResendTimer(60);
+            setTimeout(() => otpRefs[0].current?.focus(), 200);
+        } catch (err) {
+            const message = err.response?.data?.message || "Failed to send OTP";
+            setError(message);
+            toast.error(message);
+            triggerShake();
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ──────────── Step 2: Verify OTP ────────────
+    const handleOtpChange = (index, value) => {
+        if (!/^\d*$/.test(value)) return;
+
+        const newOtp = [...otp];
+        newOtp[index] = value.slice(-1);
+        setOtp(newOtp);
+        setError("");
+
+        if (value && index < 3) {
+            otpRefs[index + 1].current?.focus();
+        }
+    };
+
+    const handleOtpKeyDown = (index, e) => {
+        if (e.key === "Backspace" && !otp[index] && index > 0) {
+            otpRefs[index - 1].current?.focus();
+        }
+    };
+
+    const handleOtpPaste = (e) => {
+        e.preventDefault();
+        const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4);
+        if (pasted.length === 4) {
+            setOtp(pasted.split(""));
+            otpRefs[3].current?.focus();
+        }
+    };
+
+    const handleVerifyOTP = async (e) => {
+        e?.preventDefault();
+        const otpString = otp.join("");
+        if (otpString.length < 4) {
+            setError("Please enter the complete 4-digit OTP.");
+            triggerShake();
+            return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+            await axios.post(`${serverUrl}/api/auth/varify-otp`, {
+                email,
+                otp: Number(otpString),
+            });
+            toast.success("OTP verified");
+            setStep(3);
+        } catch (err) {
+            const message = err.response?.data?.message || "Invalid OTP";
+            setError(message);
+            toast.error(message);
+            triggerShake();
+            setOtp(["", "", "", ""]);
+            otpRefs[0].current?.focus();
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ──────────── Step 3: Reset Password ────────────
+    const handleResetPassword = async (e) => {
+        e?.preventDefault();
+        if (newPassword.length < 6) {
+            setError("Password must be at least 6 characters.");
+            triggerShake();
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setError("Passwords do not match.");
+            triggerShake();
+            return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+            await axios.post(`${serverUrl}/api/auth/reset-password`, {
+                email,
+                newPassword,
+            });
+            toast.success("Password reset successfully");
+            setTimeout(() => navigate("/signin"), 1500);
+        } catch (err) {
+            const message = err.response?.data?.message || "Could not reset password";
+            setError(message);
+            toast.error(message);
+            triggerShake();
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div
-            className="min-h-screen w-full flex items-center justify-center p-4"
-            style={{ backgroundColor: bgColor }}
-        >
-            <ToastContainer />
-            <div
-                className="bg-white rounded-xl shadow-lg w-full max-w-md p-8 "
-                style={{ borderColor: borderColor }}
-            >
-                <div className="flex items-center justify-between mb-4">
-                    <Link to="/signin">
-                        <IoIosArrowRoundBack
-                            className="size-12"
-                            style={{ color: primaryColor }}
+        <motion.div {...pageVariants} className="app-shell flex min-h-screen items-center justify-center px-4 py-10">
+            <div className="w-full max-w-lg">
+                {/* Progress bar */}
+                <div className="mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                        {stepLabels.map((label, i) => (
+                            <span
+                                key={label}
+                                className={`text-[10px] font-bold uppercase tracking-widest ${
+                                    step >= i + 1 ? "text-[var(--brand)]" : "text-gray-400"
+                                }`}
+                            >
+                                {label}
+                            </span>
+                        ))}
+                    </div>
+                    <div className="progress-bar">
+                        <motion.div
+                            className="progress-bar-fill"
+                            animate={{ width: `${(step / 3) * 100}%` }}
+                            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                         />
-                    </Link>
-                    <h1
-                        className="text-2xl text-center font-bold mb-2 mt-1.5 text-[${primaryColor}]]"
-                        style={{ color: primaryColor }}
-                    >
-                        Reset Password
-                    </h1>
+                    </div>
                 </div>
 
-                {step == 1 && (
-                    <div>
-                        {/* Email */}
-                        <div className="mb-4">
-                            <label
-                                className="block text-gray-700 mb-1 font-medium"
-                                htmlFor="email"
-                            >
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
-                                placeholder="Enter Your Email"
-                                onChange={(e) => setEmail(e.target?.value)}
-                                value={email}
-                            />
-                        </div>
-                        {/* Send OTP button */}
-                        <button
-                            className="w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition duration-200 border-orange-400 cursor-pointer hover:bg-orange-200"
-                            style={{
-                                backgroundColor: primaryColor,
-                                color: "#fff",
-                                hoverColor: "#e24310",
-                            }}
-                            onClick={handleSendOtp}
-                            disabled={loader}
-                        >
-                            {loader ? <ClipLoader size={20} color="white" /> : "Send OTP"}
-                        </button>
-                        {error && (
-                            <p className="text-red-500 text-center mt-2">
-                                {error}
-                            </p>
-                        )}
-                    </div>
-                )}
+                <motion.div
+                    className={`panel rounded-[2rem] p-6 sm:p-8 ${shakeError ? "animate-shake" : ""}`}
+                    layout
+                >
+                    <Link
+                        to="/"
+                        className="mb-6 inline-block text-2xl font-black text-[var(--brand)]"
+                    >
+                        FoodTalab
+                    </Link>
 
-                {step == 2 && (
-                    <div>
-                        {/* Email */}
-                        <div className="mb-4">
-                            <label
-                                className="block text-gray-700 mb-1 font-medium"
-                                htmlFor="email"
+                    <AnimatePresence mode="wait">
+                        {/* ─── Step 1: Email ─── */}
+                        {step === 1 && (
+                            <motion.form
+                                key="step1"
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -30 }}
+                                transition={{ duration: 0.3 }}
+                                onSubmit={handleSendOTP}
                             >
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
-                                placeholder="Enter Your Email"
-                                value={email}
-                                disabled
-                            />
-                        </div>
-                        {/* Enter OTP */}
-                        <div className="mb-4">
-                            <label
-                                className="block text-gray-700 mb-1 font-medium"
-                                htmlFor="otp"
-                            >
-                                OTP
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
-                                placeholder="Enter OTP"
-                                onChange={(e) => setOtp(e.target?.value)}
-                                value={otp}
-                            />
-                        </div>
-                        {/* Send OTP button */}
-                        <button
-                            className="w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition duration-200 border-orange-400 cursor-pointer hover:bg-orange-200"
-                            style={{
-                                backgroundColor: primaryColor,
-                                color: "#fff",
-                                hoverColor: "#e24310",
-                            }}
-                            onClick={handleVarifyOtp}
-                            disabled={loader}
-                        >
-                            {loader ? <ClipLoader size={20} color="white" /> : "Verify OTP"}
-                        </button>
-                        {error && (
-                            <p className="text-red-500 text-center mt-2">
-                                {error}
-                            </p>
-                        )}
-                    </div>
-                )}
+                                <h2 className="text-2xl font-black text-gray-950 sm:text-3xl">
+                                    Forgot password?
+                                </h2>
+                                <p className="mt-2 text-sm text-gray-500">
+                                    Enter the email linked to your account.
+                                    We'll send a 4-digit OTP.
+                                </p>
 
-                {step == 3 && (
-                    <div>
-                        {/* Password */}
-                        <div className="mb-4">
-                            <label
-                                className="block text-gray-700 mb-1 font-medium"
-                                htmlFor="newPassword"
-                            >
-                                New Password
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
-                                    placeholder="Enter New password"
-                                    value={newPassword}
-                                    onChange={(e) =>
-                                        setNewPassword(e.target.value)
-                                    }
-                                />
+                                <label className="mt-6 block text-sm font-bold text-gray-700">
+                                    Email
+                                    <div className="relative mt-2">
+                                        <LuMail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            type="email"
+                                            className="field pl-10"
+                                            placeholder="you@example.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            autoComplete="email"
+                                            autoFocus
+                                        />
+                                    </div>
+                                </label>
 
-                                <button
-                                    type="button"
-                                    className="cursor-pointer absolute top-1/2 right-3 transform -translate-y-1/2"
-                                    onClick={() =>
-                                        setShowPassword((prev) => !prev)
-                                    }
+                                {error && (
+                                    <motion.p
+                                        initial={{ opacity: 0, y: -5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-xs font-semibold text-red-600"
+                                    >
+                                        {error}
+                                    </motion.p>
+                                )}
+
+                                <motion.button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="btn-primary mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-black"
+                                    whileTap={{ scale: 0.97 }}
                                 >
-                                    {!showPassword ? (
-                                        <GiSunkenEye />
-                                    ) : (
-                                        <GiEyelashes />
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                        {/* Confirm New Password */}
-                        <div className="mb-4">
-                            <label
-                                className="block text-gray-700 mb-1 font-medium"
-                                htmlFor="confirmNewPassword"
-                            >
-                                Confirm New Password
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
-                                placeholder="Enter Confirm New Password"
-                                onChange={(e) =>
-                                    setConfirmPassword(e.target?.value)
-                                }
-                                value={confirmPassword}
-                            />
-                        </div>
-                        {/* Send OTP button */}
-                        <button
-                            className="w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition duration-200 border-orange-400 cursor-pointer hover:bg-orange-200"
-                            style={{
-                                backgroundColor: primaryColor,
-                                color: "#fff",
-                                hoverColor: "#e24310",
-                            }}
-                            onClick={handleResetPassword}
-                            disabled={loader}
-                        >
-                            {loader ? <ClipLoader size={20} color="white" /> : "Reset Password"}
-                        </button>
-                        {error && (
-                            <p className="text-red-500 text-center mt-2">
-                                {error}
-                            </p>
+                                    {loading && <ImSpinner2 className="size-4 animate-spin" />}
+                                    Send OTP
+                                </motion.button>
+
+                                <Link
+                                    to="/signin"
+                                    className="mt-5 flex items-center justify-center gap-1.5 text-sm font-bold text-gray-500 hover:text-[var(--brand)]"
+                                >
+                                    <LuArrowLeft size={14} />
+                                    Back to Sign in
+                                </Link>
+                            </motion.form>
                         )}
-                    </div>
-                )}
+
+                        {/* ─── Step 2: OTP ─── */}
+                        {step === 2 && (
+                            <motion.form
+                                key="step2"
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -30 }}
+                                transition={{ duration: 0.3 }}
+                                onSubmit={handleVerifyOTP}
+                            >
+                                <h2 className="text-2xl font-black text-gray-950 sm:text-3xl">
+                                    Verify OTP
+                                </h2>
+                                <p className="mt-2 text-sm text-gray-500">
+                                    Enter the 4-digit code sent to{" "}
+                                    <span className="font-bold text-gray-800">{email}</span>
+                                </p>
+
+                                <div className="mt-7 flex justify-center gap-3 sm:gap-4" onPaste={handleOtpPaste}>
+                                    {otp.map((digit, index) => (
+                                        <motion.input
+                                            key={index}
+                                            ref={otpRefs[index]}
+                                            type="text"
+                                            inputMode="numeric"
+                                            maxLength={1}
+                                            value={digit}
+                                            onChange={(e) => handleOtpChange(index, e.target.value)}
+                                            onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                            className={`otp-input ${digit ? "filled" : ""}`}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.08 }}
+                                        />
+                                    ))}
+                                </div>
+
+                                {error && (
+                                    <motion.p
+                                        initial={{ opacity: 0, y: -5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-center text-xs font-semibold text-red-600"
+                                    >
+                                        {error}
+                                    </motion.p>
+                                )}
+
+                                <motion.button
+                                    type="submit"
+                                    disabled={loading || otp.join("").length < 4}
+                                    className="btn-primary mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-black"
+                                    whileTap={{ scale: 0.97 }}
+                                >
+                                    {loading && <ImSpinner2 className="size-4 animate-spin" />}
+                                    Verify
+                                </motion.button>
+
+                                <div className="mt-5 flex items-center justify-center gap-4 text-sm">
+                                    {resendTimer > 0 ? (
+                                        <span className="font-semibold text-gray-400">
+                                            Resend in <span className="font-black text-[var(--brand)]">{resendTimer}s</span>
+                                        </span>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={handleSendOTP}
+                                            className="font-black text-[var(--brand)] hover:underline"
+                                        >
+                                            Resend OTP
+                                        </button>
+                                    )}
+                                    <span className="text-gray-300">•</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setStep(1); setError(""); setOtp(["","","",""]); }}
+                                        className="font-bold text-gray-500 hover:text-gray-900"
+                                    >
+                                        Change email
+                                    </button>
+                                </div>
+                            </motion.form>
+                        )}
+
+                        {/* ─── Step 3: New Password ─── */}
+                        {step === 3 && (
+                            <motion.form
+                                key="step3"
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -30 }}
+                                transition={{ duration: 0.3 }}
+                                onSubmit={handleResetPassword}
+                            >
+                                <div className="mb-5 flex size-14 items-center justify-center rounded-full bg-green-50 text-green-600">
+                                    <LuCheck size={28} />
+                                </div>
+                                <h2 className="text-2xl font-black text-gray-950 sm:text-3xl">
+                                    Set new password
+                                </h2>
+                                <p className="mt-2 text-sm text-gray-500">
+                                    Choose a new password for your account.
+                                </p>
+
+                                <label className="mt-6 block text-sm font-bold text-gray-700">
+                                    New password
+                                    <div className="relative mt-2">
+                                        <LuLock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            type="password"
+                                            className="field pl-10"
+                                            placeholder="At least 6 characters"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            autoComplete="new-password"
+                                        />
+                                    </div>
+                                </label>
+
+                                <label className="mt-4 block text-sm font-bold text-gray-700">
+                                    Confirm password
+                                    <div className="relative mt-2">
+                                        <LuLock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            type="password"
+                                            className="field pl-10"
+                                            placeholder="Re-enter your password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            autoComplete="new-password"
+                                        />
+                                    </div>
+                                </label>
+
+                                {error && (
+                                    <motion.p
+                                        initial={{ opacity: 0, y: -5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-xs font-semibold text-red-600"
+                                    >
+                                        {error}
+                                    </motion.p>
+                                )}
+
+                                <motion.button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="btn-primary mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-black"
+                                    whileTap={{ scale: 0.97 }}
+                                >
+                                    {loading && <ImSpinner2 className="size-4 animate-spin" />}
+                                    Reset password
+                                </motion.button>
+                            </motion.form>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
             </div>
-        </div>
+        </motion.div>
     );
-};
+}
 
 export default ForgotPassword;

@@ -1,5 +1,5 @@
+import "dotenv/config";
 import express from "express";
-import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.routes.js";
@@ -8,31 +8,24 @@ import userRouter from "./routes/user.routes.js";
 import shopRouter from "./routes/shop.routes.js";
 import itemRouter from "./routes/item.routes.js";
 import orderRouter from "./routes/order.routes.js";
-dotenv.config();
 import http from "http";
 import { Server } from "socket.io";
 import { socketHandler } from "./socket.js";
+import { corsOptions } from "./config/cors.js";
 
 const app = express();
 app.set("trust proxy", 1);
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: process.env.FRONTEND_ORIGIN, // http://localhost:5173
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-        credentials: true
-    }
-})
+    cors: corsOptions,
+});
 
 app.set("io", io); // Make io accessible in routes via req.app.get("io")
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 8000;
 
 // middleware
-app.use(cors({
-    origin: process.env.FRONTEND_ORIGIN, // http://localhost:5173
-    credentials: true
-}));
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

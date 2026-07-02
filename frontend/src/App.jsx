@@ -1,4 +1,4 @@
-import { data, Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -25,25 +25,34 @@ import { useEffect } from "react";
 import { io } from "socket.io-client";
 import { setSocket, updateOrderStatus } from "./redux/userSlice";
 import NotFoundPage from "./pages/NotFoundPage";
+import { serverUrl } from "./config/api";
+import { ToastContainer } from "react-toastify";
+import { AnimatePresence } from "framer-motion";
 
-export const serverUrl = "https://foodtalab-backend.onrender.com";
+/* Scroll to top on route change */
+function ScrollToTop() {
+    const { pathname } = useLocation();
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }, [pathname]);
+    return null;
+}
 
 function App() {
     useGetCurrentUser();
     useGetCity();
     const { userData, socket } = useSelector((state) => state.user);
     const dispatch = useDispatch();
-    // console.log(userData);
-    // if(userData?.data?.role === "owner"){
-    //     useGetMyShop();
-    // }
+
     useGetMyShop();
     useGetShopByCity();
     useGetItemByCity();
     useGetMyOrders();
     useUpdateLocation();
 
-    // socket test
+    const location = useLocation();
+
+    // socket connection
     useEffect(() => {
         const socketInstance = io(serverUrl, {
             withCredentials: true,
@@ -78,74 +87,89 @@ function App() {
     }, [userData?.data?._id, dispatch]);
 
     return (
-        <Routes>
-            <Route path="/" element={<Home />} />
-            <Route
-                path="/signup"
-                element={userData ? <Navigate to="/" /> : <SignUp />}
+        <>
+            <ToastContainer
+                position="top-center"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                pauseOnFocusLoss={false}
+                draggable
+                pauseOnHover={false}
+                theme="colored"
+                toastStyle={{ borderRadius: "16px" }}
             />
-            <Route
-                path="/signin"
-                element={userData ? <Navigate to="/" /> : <SignIn />}
-            />
-            <Route
-                path="/forgot-password"
-                element={
-                    !userData ? <Navigate to="/signup" /> : <ForgotPassword />
-                }
-            />
-            <Route
-                path="/create-edit-shop"
-                element={
-                    !userData ? <Navigate to="/signin" /> : <CreateEditShop />
-                }
-            />
-            <Route
-                path="/add-item"
-                element={!userData ? <Navigate to="/signin" /> : <AddItem />}
-            />
-            <Route
-                path="/edit-item/:itemId"
-                element={!userData ? <Navigate to="/signin" /> : <EditItem />}
-            />
-            <Route
-                path="/food-preview/:itemId"
-                element={
-                    !userData ? <Navigate to="/signin" /> : <FoodPreview />
-                }
-            />
-            <Route
-                path="/cart"
-                element={!userData ? <Navigate to="/signin" /> : <CartPage />}
-            />
-            <Route
-                path="/checkout"
-                element={
-                    !userData ? <Navigate to="/signin" /> : <CheckOutPage />
-                }
-            />
-            <Route
-                path="/order-placed"
-                element={
-                    !userData ? <Navigate to="/signin" /> : <OrderPlaced />
-                }
-            />
-            <Route
-                path="/my-orders"
-                element={!userData ? <Navigate to="/signin" /> : <MyOrders />}
-            />
-            <Route
-                path="/track-order/:orderId"
-                element={
-                    !userData ? <Navigate to="/signin" /> : <TrackOrderPage />
-                }
-            />
-            <Route
-                path="/shop-view/:shopId"
-                element={!userData ? <Navigate to="/signin" /> : <ShopView />}
-            />
-            <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+            <ScrollToTop />
+            <AnimatePresence mode="wait">
+                <Routes location={location} key={location.pathname}>
+                    <Route path="/" element={<Home />} />
+                    <Route
+                        path="/signup"
+                        element={userData ? <Navigate to="/" /> : <SignUp />}
+                    />
+                    <Route
+                        path="/signin"
+                        element={userData ? <Navigate to="/" /> : <SignIn />}
+                    />
+                    <Route
+                        path="/forgot-password"
+                        element={
+                            userData ? <Navigate to="/" /> : <ForgotPassword />
+                        }
+                    />
+                    <Route
+                        path="/create-edit-shop"
+                        element={
+                            !userData ? <Navigate to="/signin" /> : <CreateEditShop />
+                        }
+                    />
+                    <Route
+                        path="/add-item"
+                        element={!userData ? <Navigate to="/signin" /> : <AddItem />}
+                    />
+                    <Route
+                        path="/edit-item/:itemId"
+                        element={!userData ? <Navigate to="/signin" /> : <EditItem />}
+                    />
+                    <Route
+                        path="/food-preview/:itemId"
+                        element={<FoodPreview />}
+                    />
+                    <Route
+                        path="/cart"
+                        element={!userData ? <Navigate to="/signin" /> : <CartPage />}
+                    />
+                    <Route
+                        path="/checkout"
+                        element={
+                            !userData ? <Navigate to="/signin" /> : <CheckOutPage />
+                        }
+                    />
+                    <Route
+                        path="/order-placed"
+                        element={
+                            !userData ? <Navigate to="/signin" /> : <OrderPlaced />
+                        }
+                    />
+                    <Route
+                        path="/my-orders"
+                        element={!userData ? <Navigate to="/signin" /> : <MyOrders />}
+                    />
+                    <Route
+                        path="/track-order/:orderId"
+                        element={
+                            !userData ? <Navigate to="/signin" /> : <TrackOrderPage />
+                        }
+                    />
+                    <Route
+                        path="/shop-view/:shopId"
+                        element={!userData ? <Navigate to="/signin" /> : <ShopView />}
+                    />
+                    <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+            </AnimatePresence>
+        </>
     );
 }
 

@@ -5,7 +5,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { IoTimeOutline } from "react-icons/io5";
 import axios from "axios";
 import { useEffect } from "react";
-import { serverUrl } from "../App";
+import { serverUrl } from "../config/api";
 import DeliveryBoyTracking from "./DeliveryBoyTracking";
 import { useNavigate } from "react-router-dom";
 

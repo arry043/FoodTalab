@@ -4,7 +4,7 @@ import { MdDelete } from "react-icons/md";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setMyShopData } from "../redux/ownerSlice";
-import { serverUrl } from "../App";
+import { serverUrl } from "../config/api";
 
 function OwnerItemCard({ data }) {
     const navigate = useNavigate();
