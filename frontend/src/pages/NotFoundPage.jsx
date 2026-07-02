@@ -40,22 +40,15 @@ const NotFoundPage = () => {
             </h2>
 
             <p className="relative z-10 mt-3 max-w-sm text-sm leading-6 text-gray-500">
-                The page you are trying to access doesn’t exist or may
-                have been moved. Let’s get you back to something delicious 🍕
+                The page you are trying to access doesn’t exist or may have been
+                moved. Let’s get you back to something delicious 🍕
             </p>
 
             {/* Button */}
-<<<<<<< HEAD
-            <Link
-                to="/"
-                className="mt-8 flex items-center gap-2 bg-[#ff4d2d] hover:bg-[#e64427] text-white font-semibold px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.98] relative z-10"
+            <motion.div
+                className="relative z-10 mt-8"
+                whileTap={{ scale: 0.96 }}
             >
-                <FaArrowLeft size={14} />
-                Explore Us
-            </Link>
-        </div>
-=======
-            <motion.div className="relative z-10 mt-8" whileTap={{ scale: 0.96 }}>
                 <Link
                     to="/"
                     className="btn-primary inline-flex items-center gap-2 rounded-full px-8 py-3 text-sm font-black"
@@ -65,7 +58,6 @@ const NotFoundPage = () => {
                 </Link>
             </motion.div>
         </motion.div>
->>>>>>> d53c1ff (Improving UI/UX)
     );
 };
 

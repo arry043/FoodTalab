@@ -4,7 +4,13 @@ import axios from "axios";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { IoMdCart } from "react-icons/io";
-import { LuMapPin, LuReceipt, LuUserRound, LuLogOut, LuPackage } from "react-icons/lu";
+import {
+    LuMapPin,
+    LuReceipt,
+    LuUserRound,
+    LuLogOut,
+    LuPackage,
+} from "react-icons/lu";
 import { ImSpinner2 } from "react-icons/im";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
@@ -69,7 +75,8 @@ const Navbar = () => {
         if (showInfo) {
             document.addEventListener("mousedown", handleClickOutside);
         }
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
     }, [showInfo]);
 
     const handleLogout = async () => {
@@ -105,10 +112,6 @@ const Navbar = () => {
         }
     };
 
-<<<<<<< HEAD
-    // GEOLOCATION FETCH 
-=======
->>>>>>> d53c1ff (Improving UI/UX)
     const fetchLocation = () => {
         if (!("geolocation" in navigator)) {
             alert("Geolocation is not supported by your browser");
@@ -165,8 +168,9 @@ const Navbar = () => {
 
     const SearchBox = ({ compact = false }) => (
         <div
-            className={`panel flex items-center overflow-hidden !rounded-2xl ${compact ? "h-12" : "h-13"
-                }`}
+            className={`panel flex items-center overflow-hidden !rounded-2xl ${
+                compact ? "h-12" : "h-13"
+            }`}
         >
             <button
                 type="button"
@@ -211,7 +215,9 @@ const Navbar = () => {
     );
 
     return (
-        <header className={`glass-nav fixed inset-x-0 top-0 z-[9999] ${scrolled ? "scrolled" : ""}`}>
+        <header
+            className={`glass-nav fixed inset-x-0 top-0 z-[9999] ${scrolled ? "scrolled" : ""}`}
+        >
             <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 md:h-[4.5rem] md:px-5">
                 <Link
                     to="/"
@@ -234,7 +240,11 @@ const Navbar = () => {
                             aria-label="Search"
                             className="btn-ghost flex size-10 items-center justify-center rounded-full md:hidden"
                         >
-                            {showSearch ? <IoClose size={18} /> : <FaSearch size={14} />}
+                            {showSearch ? (
+                                <IoClose size={18} />
+                            ) : (
+                                <FaSearch size={14} />
+                            )}
                         </button>
                     )}
 
@@ -253,7 +263,9 @@ const Navbar = () => {
                         <motion.button
                             type="button"
                             onClick={() =>
-                                userData ? navigate("/cart") : navigate("/signin")
+                                userData
+                                    ? navigate("/cart")
+                                    : navigate("/signin")
                             }
                             className="btn-ghost relative flex size-10 items-center justify-center rounded-full"
                             aria-label="Cart"
@@ -279,32 +291,32 @@ const Navbar = () => {
                     {(role === "user" ||
                         role === "owner" ||
                         role === "deliveryBoy") && (
-                            <button
-                                type="button"
-                                onClick={() => navigate("/my-orders")}
-                                className="btn-ghost relative flex h-9 items-center gap-1.5 rounded-full px-2.5 text-xs font-bold sm:px-3"
-                            >
-                                <LuReceipt size={16} />
-                                <span className="hidden sm:inline">
-                                    {role === "deliveryBoy"
-                                        ? "Deliveries"
-                                        : "Orders"}
-                                </span>
-                                <AnimatePresence>
-                                    {role === "owner" && activeOrders > 0 && (
-                                        <motion.span
-                                            key={activeOrders}
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            exit={{ scale: 0 }}
-                                            className="absolute -right-1 -top-1 flex size-[18px] items-center justify-center rounded-full bg-[var(--brand)] text-[10px] font-bold text-white"
-                                        >
-                                            {activeOrders}
-                                        </motion.span>
-                                    )}
-                                </AnimatePresence>
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            onClick={() => navigate("/my-orders")}
+                            className="btn-ghost relative flex h-9 items-center gap-1.5 rounded-full px-2.5 text-xs font-bold sm:px-3"
+                        >
+                            <LuReceipt size={16} />
+                            <span className="hidden sm:inline">
+                                {role === "deliveryBoy"
+                                    ? "Deliveries"
+                                    : "Orders"}
+                            </span>
+                            <AnimatePresence>
+                                {role === "owner" && activeOrders > 0 && (
+                                    <motion.span
+                                        key={activeOrders}
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        exit={{ scale: 0 }}
+                                        className="absolute -right-1 -top-1 flex size-[18px] items-center justify-center rounded-full bg-[var(--brand)] text-[10px] font-bold text-white"
+                                    >
+                                        {activeOrders}
+                                    </motion.span>
+                                )}
+                            </AnimatePresence>
+                        </button>
+                    )}
 
                     {!userData ? (
                         <button
@@ -331,10 +343,17 @@ const Navbar = () => {
                             <AnimatePresence>
                                 {showInfo && (
                                     <motion.div
-                                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                                        initial={{
+                                            opacity: 0,
+                                            y: 8,
+                                            scale: 0.95,
+                                        }}
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                                        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                                        transition={{
+                                            duration: 0.18,
+                                            ease: [0.22, 1, 0.36, 1],
+                                        }}
                                         className="panel absolute right-0 top-12 w-60 p-4"
                                     >
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
@@ -381,7 +400,10 @@ const Navbar = () => {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{
+                            duration: 0.25,
+                            ease: [0.22, 1, 0.36, 1],
+                        }}
                         className="overflow-hidden border-t border-orange-100/60 px-4 md:hidden"
                     >
                         <div className="py-3">

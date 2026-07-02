@@ -27,11 +27,7 @@ FoodTalab is a production-grade MERN food ordering platform with real-time track
 
 ## Backend
 
-<<<<<<< HEAD
-### Install 
-=======
 ### Install
->>>>>>> d53c1ff (Improving UI/UX)
 
 ```bash
 cd backend
@@ -52,11 +48,7 @@ Create `backend/.env` with:
 PORT=5000
 MONGODB_URL=<your-mongodb-connection-string>
 JWT_SECRET=<your-jwt-secret>
-<<<<<<< HEAD
-FRONTEND_ORIGIN=http://localhost:5173
-=======
 CORS_ORIGINS=http://localhost:5173
->>>>>>> d53c1ff (Improving UI/UX)
 EMAIL=<smtp-email-address>
 PASS=<smtp-email-password>
 CLOUDINARY_CLOUD_NAME=<cloudinary-cloud-name>
@@ -135,10 +127,10 @@ npm run dev
 Create `frontend/.env` with:
 
 ```text
-<<<<<<< HEAD
-=======
 VITE_BACKEND_URL=http://localhost:8000
->>>>>>> d53c1ff (Improving UI/UX)
+VITE_FIREBASE_API_KEY=<firebase-api-key>
+VITE_RAZORPAY_KEY_ID=<razorpay-key-id>
+VITE_GEO_LOCATION_API_KEY=<geoapify-api-key>
 VITE_FIREBASE_API_KEY=<firebase-api-key>
 VITE_RAZORPAY_KEY_ID=<razorpay-key-id>
 VITE_GEO_LOCATION_API_KEY=<geoapify-api-key>
@@ -146,27 +138,16 @@ VITE_GEO_LOCATION_API_KEY=<geoapify-api-key>
 
 ### Notes
 
-<<<<<<< HEAD
-- `frontend/src/App.jsx` is configured to use `https://foodtalab-backend.onrender.com` as the backend URL. Update `serverUrl` there or use a local backend URL for development.
-=======
-- `frontend/src/config/api.js` reads `VITE_BACKEND_URL`. Development defaults to `http://localhost:8000`; production defaults to `https://foodtalab-backend.onrender.com`.
-- `frontend/.env.development` keeps local Vite pointed at the local backend. `frontend/.env.production` keeps production builds pointed at the Render backend.
-- Keep real keys in ignored local files such as `frontend/.env.local` or deployment provider environment variables. Use the committed `.env.example` files as templates.
->>>>>>> d53c1ff (Improving UI/UX)
-- Firebase is used for Google sign-in token generation, while backend `/api/auth/google-auth` creates or fetches the user record.
-- Checkout uses the Razorpay checkout script from `frontend/index.html` and backend order creation / verification.
-- Real-time order and delivery assignment updates are handled via Socket.IO connections.
-
-## Deployment
-
-<<<<<<< HEAD
-- Backend and frontend are designed to deploy separately, with CORS configured using `FRONTEND_ORIGIN`.
-- The backend currently points at `https://foodtalab-backend.onrender.com` in the frontend.
-=======
 - Backend and frontend are designed to deploy separately, with CORS configured using `CORS_ORIGINS`.
 - For production backend deployment, set `NODE_ENV=production` and `CORS_ORIGINS=https://foodtalab-frontend.onrender.com`.
 - For local development, keep `NODE_ENV` unset or set to `development`; the backend also allows `http://localhost:5173` and `http://127.0.0.1:5173`.
->>>>>>> d53c1ff (Improving UI/UX)
+
+
+## Deployment
+
+- Backend and frontend are designed to deploy separately, with CORS configured using `CORS_ORIGINS`.
+- For production backend deployment, set `NODE_ENV=production` and `CORS_ORIGINS=https://foodtalab-frontend.onrender.com`.
+- For local development, keep `NODE_ENV` unset or set to `development`; the backend also allows `http://localhost:5173` and `http://127.0.0.1:5173`.
 
 ## Database Models
 
@@ -195,11 +176,7 @@ VITE_GEO_LOCATION_API_KEY=<geoapify-api-key>
 
 - Ensure the backend is running before starting the frontend
 - Use `withCredentials: true` in frontend Axios calls to send JWT cookies
-<<<<<<< HEAD
-- If using local backend, update `serverUrl` in `frontend/src/App.jsx`
-=======
-- Use `VITE_BACKEND_URL` for backend target changes instead of editing React source files
->>>>>>> d53c1ff (Improving UI/UX)
+- Use `VITE_BACKEND_URL` for backend target changes instead of editing React source files.
 
 ---
 
